@@ -16,11 +16,7 @@ export default class CreepRoleRepairT1 extends CreepRoleWorker<
         if (structs.length) {
             if (creep.carry[RESOURCE_ENERGY] === 0) {
                 const spawn = Game.spawns.Home;
-                if (
-                    spawn.store[RESOURCE_ENERGY] /
-                        spawn.store.getCapacity(RESOURCE_ENERGY) >
-                    0.5
-                ) {
+                if (spawn.store.getUsedCapacity(RESOURCE_ENERGY) > 0) {
                     if (
                         creep.withdraw(spawn, RESOURCE_ENERGY) ===
                         ERR_NOT_IN_RANGE
@@ -30,18 +26,17 @@ export default class CreepRoleRepairT1 extends CreepRoleWorker<
                         });
                     }
                 }
-                return false;
+                return true;
             } else {
                 if (creep.repair(structs[0]) === ERR_NOT_IN_RANGE) {
                     creep.moveTo(structs[0], {
                         visualizePathStyle: { stroke: "#ffaa00" }
                     });
                 }
+                return true;
             }
-        } else {
-            creep.moveToParking();
         }
-        return true;
+        return false;
     }
 
     public getNeededCreeps(room: Room): number {

@@ -17,29 +17,34 @@ export function moveToParking(creep: Creep) {
 
 export const STORAGE_PRIORITIES = [
     STRUCTURE_SPAWN,
+    STRUCTURE_EXTENSION,
+    STRUCTURE_TOWER,
     STRUCTURE_CONTAINER,
     STRUCTURE_STORAGE
 ];
 
 export type StorageStructures =
     | StructureSpawn
+    | StructureExtension
+    | StructureTower
     | StructureContainer
     | StructureStorage;
 
 export function getStorage<R extends ResourceConstant>(
     room: Room,
     resource: R,
-    filter: (
-        st: StructureSpawn | StructureContainer | StructureStorage
-    ) => boolean,
+    filter: (st: StorageStructures) => boolean,
     reversePriority: boolean = false
 ): StorageStructures | undefined {
     const storages = _.sortBy(
         room.find(FIND_STRUCTURES, {
             filter: st =>
                 (st instanceof StructureSpawn ||
+                    st instanceof StructureExtension ||
+                    st instanceof StructureTower ||
                     st instanceof StructureContainer ||
                     st instanceof StructureStorage) &&
+                filter(st) &&
                 ((st instanceof OwnedStructure && st.my) ||
                     (room.controller && room.controller.my))
         }) as StorageStructures[],
@@ -66,7 +71,10 @@ export function getStorageWithAvailableResource(
     return getStorage(
         room,
         resource,
-        st => (st.store[resource] ?? 0) > 0,
+        st =>
+            !(st instanceof StructureTower) &&
+            !_.isNil(st.store[resource]) &&
+            st.store[resource] > 0,
         true
     );
 }
@@ -94,7 +102,7 @@ export function renewIfNeeded(creep: Creep): boolean {
                     delete creep.memory.needsRenewing;
                     break;
                 default:
-                    creep.say("♻");
+                    creep.say("🔋");
             }
 
             return true;

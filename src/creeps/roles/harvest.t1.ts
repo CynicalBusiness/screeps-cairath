@@ -1,21 +1,32 @@
 import CreepRoleWorker from ".";
 import { getNeighbors } from "../../utils";
 import { getStorageWithAvailableSpace } from "../misc";
+import { ICreepWithRole } from "../../types";
+import { CreepRoles } from "..";
 
-export const CreepRoleHarvestT1Name = "HarvestT1";
-
-export interface ICreepRoleHarvestData {
-    source?: string;
-    spawnName: string;
-}
+export const CreepRoleHarvestName = "Harvest";
 
 export default class CreepRoleHarvestT1 extends CreepRoleWorker<
-    typeof CreepRoleHarvestT1Name
+    typeof CreepRoleHarvestName
 > {
     public readonly neededParts = [WORK, MOVE, CARRY];
+    public readonly role = CreepRoleHarvestName;
 
-    public work(creep: Creep, data: ICreepRoleHarvestData): boolean {
-        if (creep.store.getFreeCapacity() > 0) {
+    public work(creep: ICreepWithRole<typeof CreepRoleHarvestName>): boolean {
+        const { data } = creep.memory.role;
+
+        if (data.needsUnloading) {
+            if (
+                creep.store[RESOURCE_ENERGY] === 0 ||
+                creep.moveAndTransfer(RESOURCE_ENERGY)
+            ) {
+                delete data.needsUnloading;
+                return true;
+            }
+        } else if (creep.store.getFreeCapacity(RESOURCE_ENERGY) === 0) {
+            data.needsUnloading = true;
+            return this.work(creep);
+        } else {
             if (data.source) {
                 const source = Game.getObjectById(data.source) as Source;
                 switch (creep.harvest(source)) {
@@ -27,15 +38,12 @@ export default class CreepRoleHarvestT1 extends CreepRoleWorker<
                 }
                 return true;
             }
-        } else {
-            // delete data.source;
-            if (creep.moveAndTransfer(RESOURCE_ENERGY)) return true;
         }
         return false;
     }
 
     public getNeededCreeps(room: Room): number {
-        let needed = 8;
+        let needed = 2;
 
         for (const source of room.find(FIND_SOURCES)) {
             for (const neighbor of getNeighbors(source.pos)) {
@@ -52,8 +60,7 @@ export default class CreepRoleHarvestT1 extends CreepRoleWorker<
     }
 
     public shouldStartProduction(room: Room): boolean {
-        // TODO actually check this somehow
-        return true;
+        return !!room.controller && room.controller.level >= this.tier;
     }
 
     public createNewRoleData(spawn: StructureSpawn) {

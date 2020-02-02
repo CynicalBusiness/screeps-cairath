@@ -4,50 +4,75 @@ import "./prototypes";
 import { Dictionary } from "lodash";
 import _ from "lodash";
 import { CreepRoles, CreepRoleWorkers } from "./creeps";
-import { CreepRoleHarvestT1Name } from "./creeps/roles/harvest.t1";
+import { CreepRoleHarvestName } from "./creeps/roles/harvest.t1";
 import { CreepRoleUpgradeT1Name } from "./creeps/roles/upgrade.t1";
 import roles, { RoleName } from "./roles";
 import { CreepRoleRepairT1Name } from "./creeps/roles/repair.t1";
 import { CreepRoleBuildT1Name } from "./creeps/roles/builder.t1";
+import CreepRoleWorker from "./creeps/roles";
 
 interface IDesiredRoleData {
     amount: number;
     parts?: BodyPartConstant[];
 }
 
-const priorities = {
-    [CreepRoleHarvestT1Name]: 0,
-    [CreepRoleUpgradeT1Name]: 1,
-    [CreepRoleBuildT1Name]: 2,
-    [CreepRoleRepairT1Name]: 3
-};
+const prioritiesArray: CreepRoles[] = [
+    CreepRoleHarvestName,
+    CreepRoleUpgradeT1Name,
+    CreepRoleBuildT1Name,
+    CreepRoleRepairT1Name
+];
+const priorities = _.fromPairs(prioritiesArray.map((w, i) => [w, i])) as Record<
+    CreepRoles,
+    number
+>;
 
 // When compiling TS to JS and bundling with rollup, the line numbers and file names in error messages change
 // This utility uses source maps to get the line numbers and file names of the original, TS source code
 export const loop = ErrorMapper.wrapLoop(() => {
     // console.log(`Current game tick is ${Game.time}`);
 
-    const currentRoleWantedPerRoom: Dictionary<Record<CreepRoles, number>> = {};
-    const currentRoleCountsPerRoom: Dictionary<Record<CreepRoles, number>> = {};
+    const currentRoleWantedPerRoom: Dictionary<Record<
+        CreepRoles,
+        number[]
+    >> = {};
+    const currentRoleCountsPerRoom: Dictionary<Record<
+        CreepRoles,
+        number[]
+    >> = {};
+    const maxTierPerRoom: Dictionary<number> = {};
 
     _.each(Game.spawns, spawn => {
         if (!spawn.my) return;
+        const { name: roomName } = spawn.room;
+        maxTierPerRoom[roomName] = 0;
 
-        currentRoleCountsPerRoom[spawn.room.name] =
-            currentRoleCountsPerRoom[spawn.room.name] ??
-            _.mapValues(priorities, v => 0);
+        if (!currentRoleWantedPerRoom[roomName]) {
+            const counts = _.mapValues(priorities, () => [] as number[]);
+            _.each(prioritiesArray, role => {
+                counts[role] = _.map<CreepRoleWorker, number>(
+                    CreepRoleWorkers[role],
+                    w => w.getNeededCreeps(spawn.room)
+                );
+                maxTierPerRoom[roomName] = Math.max(
+                    maxTierPerRoom[roomName],
+                    CreepRoleWorkers[role].length
+                );
+            });
+            currentRoleWantedPerRoom[roomName] = counts;
+        }
 
-        if (currentRoleWantedPerRoom[spawn.room.name]) return;
-
-        currentRoleWantedPerRoom[spawn.room.name] = _.mapValues(
-            priorities,
-            () => 0
-        );
-        _.each(Object.keys(priorities) as CreepRoles[], role => {
-            currentRoleWantedPerRoom[spawn.room.name][role] = CreepRoleWorkers[
-                role
-            ].getNeededCreeps(spawn.room);
-        });
+        if (!currentRoleCountsPerRoom[roomName]) {
+            const counts = _.mapValues(priorities, () => [] as number[]);
+            _.each(prioritiesArray, role => {
+                counts[role] = _.map<CreepRoleWorker, number>(
+                    CreepRoleWorkers[role],
+                    () => 0
+                );
+            });
+            // I don't know why lodash types are so fucked, but this works
+            currentRoleCountsPerRoom[roomName] = counts;
+        }
     });
 
     // issue work to creeps
@@ -55,16 +80,24 @@ export const loop = ErrorMapper.wrapLoop(() => {
         const { role } = creep.memory;
         if (role) {
             const worker = creep.getWorker();
-            if (worker) {
-                const roomName = creep.memory.homeRoom ?? creep.room.name;
-                currentRoleCountsPerRoom[roomName][role.name]++;
-                if (!creep.doWork()) creep.moveToParking();
+            const roomName = creep.memory.homeRoom ?? creep.room.name;
+            const roomCounts = currentRoleCountsPerRoom[roomName][role.name];
+            if (worker && roomCounts) {
+                const tier = worker.tier - 1;
+                roomCounts[tier]++;
+                if (
+                    roomCounts[tier] >
+                        currentRoleWantedPerRoom[roomName][role.name][tier] &&
+                    !creep.memory.markedForRecycling
+                ) {
+                    creep.memory.markedForRecycling = true;
+                } else if (!creep.doWork()) creep.moveToParking();
             }
         }
     });
 
     // spawn creeps up to needed values
-    forEachRoom: for (const roomName of Object.keys(currentRoleWantedPerRoom)) {
+    for (const roomName of Object.keys(currentRoleWantedPerRoom)) {
         const counts = currentRoleCountsPerRoom[roomName];
         const wanted = currentRoleWantedPerRoom[roomName];
         const rolesPriority = _.sortBy(
@@ -74,22 +107,40 @@ export const loop = ErrorMapper.wrapLoop(() => {
 
         const room = Game.rooms[roomName];
         const spawns = room.find(FIND_MY_SPAWNS);
+        if (!spawns.length) continue;
 
-        forEachRole: for (const role of rolesPriority) {
-            if (counts[role] < wanted[role])
-                for (const spawn of spawns) {
+        forEachTier: for (
+            let tier = 0;
+            tier < maxTierPerRoom[roomName];
+            tier++
+        ) {
+            for (const role of rolesPriority) {
+                const worker = CreepRoleWorkers[role][tier];
+                if (!worker) continue;
+                if (wanted[role]) {
                     if (
-                        !spawn.spawning &&
-                        spawn.spawnCreepWithRole(role) === OK
+                        (counts[role][tier] === undefined ||
+                            counts[role][tier] < wanted[role][tier]) &&
+                        worker.shouldStartProduction(room)
                     ) {
-                        console.log(
-                            `Successfully spawned ${role} at ${
-                                spawn.name
-                            } (${counts[role] + 1}/${wanted[role]})`
-                        );
+                        for (const spawn of spawns) {
+                            if (
+                                !spawn.spawning &&
+                                spawn.spawnCreepWithRole(role, tier + 1) === OK
+                            ) {
+                                console.log(
+                                    `Spawned ${roomName}/${
+                                        spawn.name
+                                    }: ${role} T${tier + 1} (${(counts[role][
+                                        tier
+                                    ] ?? 0) + 1}/${wanted[role][tier]})`
+                                );
+                            }
+                            break forEachTier;
+                        }
                     }
-                    break forEachRole;
                 }
+            }
         }
     }
 

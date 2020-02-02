@@ -1,33 +1,38 @@
 import CreepRoleWorker from "./roles";
-import CreepRoleHarvestT1, {
-    CreepRoleHarvestT1Name,
-    ICreepRoleHarvestData
-} from "./roles/harvest.t1";
+import CreepRoleHarvestT1, { CreepRoleHarvestName } from "./roles/harvest.t1";
 import CreepRoleUpgradeT1, { CreepRoleUpgradeT1Name } from "./roles/upgrade.t1";
 import { Dictionary } from "lodash";
 import CreepRoleRepairT1, { CreepRoleRepairT1Name } from "./roles/repair.t1";
 import CreepRoleBuildT1, {
     CreepRoleBuildT1Name,
-    ICreepRoleBuildT1Data
+    ICreepRoleBuildData
 } from "./roles/builder.t1";
+import CreepRoleHarvestT2 from "./roles/harvest.t2";
 
-export const CreepRoleWorkers: { [K in CreepRoles]: CreepRoleWorker<K> } = {
-    [CreepRoleHarvestT1Name]: new CreepRoleHarvestT1(),
-    [CreepRoleUpgradeT1Name]: new CreepRoleUpgradeT1(),
-    [CreepRoleRepairT1Name]: new CreepRoleRepairT1(),
-    [CreepRoleBuildT1Name]: new CreepRoleBuildT1()
+export const CreepRoleWorkers: { [K in CreepRoles]: CreepRoleWorker<K>[] } = {
+    [CreepRoleHarvestName]: [
+        new CreepRoleHarvestT1(),
+        new CreepRoleHarvestT2()
+    ],
+    [CreepRoleUpgradeT1Name]: [new CreepRoleUpgradeT1()],
+    [CreepRoleRepairT1Name]: [new CreepRoleRepairT1()],
+    [CreepRoleBuildT1Name]: [new CreepRoleBuildT1()]
 };
 
 export interface ICreepRoleWorkerData
     extends Record<CreepRoles, Dictionary<any>> {
-    [CreepRoleHarvestT1Name]: ICreepRoleHarvestData;
+    [CreepRoleHarvestName]: {
+        source?: string;
+        needsUnloading?: boolean;
+        spawnName: string;
+    };
     [CreepRoleUpgradeT1Name]: {};
     [CreepRoleRepairT1Name]: {};
-    [CreepRoleBuildT1Name]: ICreepRoleBuildT1Data;
+    [CreepRoleBuildT1Name]: ICreepRoleBuildData;
 }
 
 export type CreepRoles =
-    | typeof CreepRoleHarvestT1Name
+    | typeof CreepRoleHarvestName
     | typeof CreepRoleUpgradeT1Name
     | typeof CreepRoleRepairT1Name
     | typeof CreepRoleBuildT1Name;

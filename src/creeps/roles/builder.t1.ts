@@ -1,9 +1,10 @@
 import CreepRoleWorker from ".";
 import _ from "lodash";
+import { ICreepWithRole } from "../../types";
 
 export const CreepRoleBuildT1Name = "BuildT1";
 
-export interface ICreepRoleBuildT1Data {
+export interface ICreepRoleBuildData {
     target?: string;
 }
 
@@ -11,8 +12,10 @@ export default class CreepRoleBuildT1 extends CreepRoleWorker<
     typeof CreepRoleBuildT1Name
 > {
     public readonly neededParts = [WORK, MOVE, CARRY];
+    public readonly role = CreepRoleBuildT1Name;
 
-    public work(creep: Creep, data: ICreepRoleBuildT1Data): boolean {
+    public work(creep: ICreepWithRole<typeof CreepRoleBuildT1Name>): boolean {
+        const { data } = creep.memory.role;
         if (!data.target) {
             if (creep.refillIfNeeded(RESOURCE_ENERGY)) return true;
 
@@ -47,7 +50,7 @@ export default class CreepRoleBuildT1 extends CreepRoleWorker<
     }
 
     public getNeededCreeps(room: Room): number {
-        return 2;
+        return 3;
     }
 
     public shouldStartProduction(room: Room): boolean {

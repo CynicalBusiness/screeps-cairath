@@ -1,19 +1,29 @@
-import { CreepRoles, ICreepRoleWorkerData } from "..";
+import { CreepRoles, ICreepRoleWorkerData, CreepRoleWorkers } from "..";
+import { ICreepWithRole } from "../../types";
 
 /** A singleton class used for controlling different kinds of creeps */
 export default abstract class CreepRoleWorker<
     TRole extends CreepRoles = CreepRoles
 > {
     public abstract neededParts: BodyPartConstant[];
+    public abstract role: TRole;
+
+    private _tier?: number;
+    public get tier() {
+        if (!this._tier) {
+            const workers = CreepRoleWorkers[this.role] as CreepRoleWorker<
+                TRole
+            >[];
+            this._tier = workers ? workers.indexOf(this) + 1 : 0;
+        }
+        return this._tier;
+    }
 
     /**
      * Makes the creep do work, returning if work was able to be completed.
      * @param creep The creep
      */
-    public abstract work(
-        creep: Creep,
-        data: ICreepRoleWorkerData[TRole]
-    ): boolean;
+    public abstract work(creep: ICreepWithRole<TRole>): boolean;
 
     /**
      * Gets the number of creeps needed in a room
@@ -30,15 +40,13 @@ export default abstract class CreepRoleWorker<
         spawn: StructureSpawn
     ): ICreepRoleWorkerData[TRole];
 
-    public createNewMemory(
-        spawn: StructureSpawn,
-        name: TRole
-    ): CreepMemory<TRole> {
+    public createNewMemory(spawn: StructureSpawn): CreepMemory<TRole> {
         return {
             ...this.createGenericMemory(spawn),
             role: {
-                name,
-                data: this.createNewRoleData(spawn)
+                name: this.role,
+                data: this.createNewRoleData(spawn),
+                tier: this.tier
             }
         };
     }

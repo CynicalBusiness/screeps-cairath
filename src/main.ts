@@ -152,6 +152,19 @@ export const loop = ErrorMapper.wrapLoop(() => {
             delete Memory.creeps[name];
         }
     }
+
+    // TODO tutorial tower code
+    const tower = Game.getObjectById(
+        "5e371a6574f61451715078f8" as Id<StructureTower>
+    );
+    if (tower) {
+        const closestHostile = tower.pos.findClosestByRange(
+            FIND_HOSTILE_CREEPS
+        );
+        if (closestHostile) {
+            tower.attack(closestHostile);
+        }
+    }
 });
 
 console.log("Successfully updated scripts: ", new Date().toISOString());

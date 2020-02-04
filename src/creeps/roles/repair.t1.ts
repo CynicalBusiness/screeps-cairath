@@ -2,6 +2,7 @@ import CreepRoleWorker from ".";
 import { createOnlyOwnStructuresFilter } from "../../utils";
 import _ from "lodash";
 import { CreepRoleHarvestName } from "./harvest.t1";
+import { ICreepWithRole } from "../../types";
 
 export const CreepRoleRepairT1Name = "RepairT1";
 
@@ -11,25 +12,21 @@ export default class CreepRoleRepairT1 extends CreepRoleWorker<
     public readonly neededParts = [WORK, MOVE, CARRY];
     public readonly role = CreepRoleRepairT1Name;
 
-    public work(creep: Creep): boolean {
-        const structs = _.sortBy(
-            creep.room.find(
-                FIND_STRUCTURES,
-                createOnlyOwnStructuresFilter(s => s.hits < s.hitsMax)
-            ),
-            s => s.hits
-        );
-        if (structs.length) {
-            if (creep.carry[RESOURCE_ENERGY] === 0) {
-                return creep.moveAndWithdraw(RESOURCE_ENERGY);
-            } else {
-                if (creep.repair(structs[0]) === ERR_NOT_IN_RANGE) {
-                    creep.moveTo(structs[0], {
-                        visualizePathStyle: { stroke: "#ffaa00" }
+    public work(creep: ICreepWithRole<typeof CreepRoleRepairT1Name>): boolean {
+        const { data } = creep.memory.role;
+        if (creep.carry[RESOURCE_ENERGY] === 0) {
+            delete data.target;
+            return creep.moveAndWithdraw(RESOURCE_ENERGY);
+        } else if (data.target) {
+            const struct = Game.getObjectById(data.target);
+            if (struct && struct.hits < struct.hitsMax) {
+                if (creep.repair(struct) === ERR_NOT_IN_RANGE) {
+                    creep.moveTo(struct, {
+                        visualizePathStyle: { stroke: "#ffff00" }
                     });
                 }
-                return true;
-            }
+            } else delete data.target;
+            return true;
         }
         return false;
     }

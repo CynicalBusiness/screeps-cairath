@@ -27,7 +27,9 @@ export interface ICreepRoleWorkerData
         spawnName: string;
     };
     [CreepRoleUpgradeT1Name]: {};
-    [CreepRoleRepairT1Name]: {};
+    [CreepRoleRepairT1Name]: {
+        target?: Id<Structure>;
+    };
     [CreepRoleBuildT1Name]: ICreepRoleBuildData;
 }
 

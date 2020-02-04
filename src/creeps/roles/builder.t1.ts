@@ -54,8 +54,8 @@ export default class CreepRoleBuildT1 extends CreepRoleWorker<
         return Math.max(
             1,
             Math.min(
-                room.findCreepsOfRole(CreepRoleHarvestName).length / 2,
-                room.find(FIND_MY_CONSTRUCTION_SITES).length / 2
+                Math.floor(room.findCreepsOfRole(CreepRoleHarvestName).length / 2),
+                Math.floor(room.find(FIND_MY_CONSTRUCTION_SITES).length / 2)
             )
         );
     }

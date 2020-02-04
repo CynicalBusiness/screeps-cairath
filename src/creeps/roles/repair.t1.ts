@@ -38,7 +38,9 @@ export default class CreepRoleRepairT1 extends CreepRoleWorker<
         return Math.max(
             Math.min(
                 room.controller?.level ?? 0 - 1,
-                Math.floor(room.energyAvailable / 500)
+                Math.floor(
+                    room.findCreepsOfRole(CreepRoleHarvestName).length / 3
+                )
             ),
             1
         );

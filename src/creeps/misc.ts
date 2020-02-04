@@ -30,12 +30,12 @@ export type StorageStructures =
     | StructureContainer
     | StructureStorage;
 
-export function getStorage<R extends ResourceConstant>(
+export function getStorages<R extends ResourceConstant>(
     room: Room,
     resource: R,
     filter: (st: StorageStructures) => boolean,
     reversePriority: boolean = false
-): StorageStructures | undefined {
+): StorageStructures[] {
     const storages = _.sortBy(
         room.find(FIND_STRUCTURES, {
             filter: st =>
@@ -50,7 +50,17 @@ export function getStorage<R extends ResourceConstant>(
         }) as StorageStructures[],
         st => STORAGE_PRIORITIES.indexOf(st.structureType)
     );
-    return reversePriority ? storages.pop() : storages[0];
+    if (reversePriority) _.reverse(storages);
+    return storages;
+}
+
+export function getStorage<R extends ResourceConstant>(
+    room: Room,
+    resource: R,
+    filter: (st: StorageStructures) => boolean,
+    reversePriority: boolean = false
+): StorageStructures | undefined {
+    return getStorages(room, resource, filter, reversePriority)[0];
 }
 
 export function getStorageWithAvailableSpace(
@@ -66,9 +76,10 @@ export function getStorageWithAvailableSpace(
 
 export function getStorageWithAvailableResource(
     room: Room,
-    resource: ResourceConstant
+    resource: ResourceConstant,
+    ignoreSpawnIfOthersAvailable: boolean = true
 ) {
-    return getStorage(
+    const storages = getStorages(
         room,
         resource,
         st =>
@@ -77,6 +88,19 @@ export function getStorageWithAvailableResource(
             st.store[resource] > 0,
         true
     );
+    if (ignoreSpawnIfOthersAvailable) {
+        const storagesWithoutSpawns = _.filter(
+            storages,
+            st =>
+                !(
+                    st instanceof StructureSpawn ||
+                    st instanceof StructureExtension
+                )
+        );
+        return (storagesWithoutSpawns.length > 0
+            ? storagesWithoutSpawns
+            : storages)[0];
+    } else return storages[0];
 }
 
 export function getMaxTicksToLive(creep: Creep): number {

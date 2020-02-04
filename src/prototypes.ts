@@ -6,9 +6,11 @@ import {
     getStorageWithAvailableResource
 } from "./creeps/misc";
 import CreepRoleWorker from "./creeps/roles";
-import { ICreepWithRole } from "./types";
+import { ICreepWithRole, IRoomRoleMemory } from "./types";
 import _ from "lodash";
 import { getHomeRoom } from "./utils";
+import { RoomRole, RoomRoleDispatchers } from "./command";
+import RoomDispatcher from "./command/dispatchers";
 
 Object.defineProperties(Creep.prototype, {
     role: {
@@ -116,8 +118,14 @@ Creep.prototype.isRole = function(roleName: CreepRoles): boolean {
 };
 
 Room.prototype.isWalkable = function(pos): boolean {
-    // TODO check structures
-    return (this.getTerrain().get(pos.x, pos.y) & TERRAIN_MASK_WALL) === 0;
+    // TODO check non-walkable structures
+    return (
+        this.find(FIND_STRUCTURES, {
+            filter: s =>
+                s.structureType === STRUCTURE_ROAD && s.pos.isEqualTo(pos)
+        }).length > 0 ||
+        (this.getTerrain().get(pos.x, pos.y) & TERRAIN_MASK_WALL) === 0
+    );
 };
 
 Room.prototype.findCreepsOfRole = function<TRole extends CreepRoles>(
@@ -127,6 +135,39 @@ Room.prototype.findCreepsOfRole = function<TRole extends CreepRoles>(
     return this.find(FIND_MY_CREEPS, {
         filter: c => c.isRole(role) && (tier === undefined || c.tier === tier)
     }) as ICreepWithRole<TRole>[];
+};
+
+Room.prototype.getDispatchers = function(): RoomDispatcher[] {
+    return this.getRoles().map(r => RoomRoleDispatchers[r]);
+};
+
+Room.prototype.dispatchAll = function(): void {
+    for (const role of this.memory.roles ?? []) {
+        RoomRoleDispatchers[role.name].dispatch(this, role.data);
+    }
+};
+
+Room.prototype.addRole = function(role: RoomRole) {
+    if (this.hasRole(role)) return;
+
+    this.memory.roles = this.memory.roles ?? [];
+
+    const dispatcher = RoomRoleDispatchers[role];
+    if (dispatcher) this.memory.roles.push(dispatcher.createNewMemory());
+};
+
+Room.prototype.getRoles = function(): RoomRole[] {
+    return this.memory.roles?.map(r => r.name) ?? [];
+};
+
+Room.prototype.getRole = function<TRole extends RoomRole>(role: TRole) {
+    return _.find(this.memory.roles ?? [], r => r.name === role) as Optional<
+        IRoomRoleMemory<TRole>
+    >;
+};
+
+Room.prototype.hasRole = function(role: RoomRole): boolean {
+    return !!this.getRole(role);
 };
 
 StructureSpawn.prototype.spawnCreepWithRole = function(

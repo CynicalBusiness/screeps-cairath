@@ -1,8 +1,7 @@
 import CreepRoleWorker from ".";
 import { getNeighbors } from "../../utils";
-import { getStorageWithAvailableSpace } from "../misc";
 import { ICreepWithRole } from "../../types";
-import { CreepRoles } from "..";
+import _ from "lodash";
 
 export const CreepRoleHarvestName = "Harvest";
 
@@ -27,17 +26,17 @@ export default class CreepRoleHarvestT1 extends CreepRoleWorker<
             data.needsUnloading = true;
             return this.work(creep);
         } else {
-            if (data.source) {
-                const source = Game.getObjectById(data.source) as Source;
-                switch (creep.harvest(source)) {
-                    case ERR_NOT_IN_RANGE:
-                        creep.moveTo(source, {
-                            visualizePathStyle: { stroke: "#ffaa00" }
-                        });
-                        break;
-                }
-                return true;
+            const source = data.source
+                ? (Game.getObjectById(data.source) as Source)
+                : creep.room.find(FIND_SOURCES)[0];
+            switch (creep.harvest(source)) {
+                case ERR_NOT_IN_RANGE:
+                    creep.moveTo(source, {
+                        visualizePathStyle: { stroke: "#ffaa00" }
+                    });
+                    break;
             }
+            return true;
         }
         return false;
     }
@@ -51,12 +50,15 @@ export default class CreepRoleHarvestT1 extends CreepRoleWorker<
                     needed++;
                 }
             }
-
-            // TODO do all sources
-            break;
         }
 
-        return needed;
+        return (
+            needed -
+            _.filter(
+                room.findCreepsOfRole(this.role),
+                c => c.tier === this.tier + 1
+            ).length
+        );
     }
 
     public shouldStartProduction(room: Room): boolean {

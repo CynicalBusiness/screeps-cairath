@@ -106,6 +106,8 @@ export const loop = ErrorMapper.wrapLoop(() => {
         );
 
         const room = Game.rooms[roomName];
+        room.dispatchAll();
+
         const spawns = room.find(FIND_MY_SPAWNS);
         if (!spawns.length) continue;
 

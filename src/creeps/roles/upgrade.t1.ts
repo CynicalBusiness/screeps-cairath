@@ -1,4 +1,5 @@
 import CreepRoleWorker from ".";
+import { CreepRoleHarvestName } from "./harvest.t1";
 
 export const CreepRoleUpgradeT1Name = "UpgradeT1";
 
@@ -37,7 +38,13 @@ export default class CreepRoleUpgradeT1 extends CreepRoleWorker<
     }
 
     public getNeededCreeps(room: Room): number {
-        return room.controller?.level ?? 0;
+        return Math.max(
+            1,
+            Math.min(
+                room.controller?.level ?? 0,
+                Math.floor(room.energyAvailable / 500)
+            )
+        );
     }
 
     public shouldStartProduction(room: Room): boolean {

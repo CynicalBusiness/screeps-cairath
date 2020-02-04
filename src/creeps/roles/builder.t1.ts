@@ -1,6 +1,7 @@
 import CreepRoleWorker from ".";
 import _ from "lodash";
 import { ICreepWithRole } from "../../types";
+import { CreepRoleHarvestName } from "./harvest.t1";
 
 export const CreepRoleBuildT1Name = "BuildT1";
 
@@ -50,7 +51,13 @@ export default class CreepRoleBuildT1 extends CreepRoleWorker<
     }
 
     public getNeededCreeps(room: Room): number {
-        return 3;
+        return Math.max(
+            1,
+            Math.min(
+                room.findCreepsOfRole(CreepRoleHarvestName).length / 2,
+                room.find(FIND_MY_CONSTRUCTION_SITES).length / 2
+            )
+        );
     }
 
     public shouldStartProduction(room: Room): boolean {

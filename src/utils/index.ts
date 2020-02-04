@@ -30,16 +30,15 @@ export function getNeighbors(pos: RoomPosition): RoomPosition[] {
     const room = Game.rooms[pos.roomName];
     return _.map(
         [
-            [0, 0],
             [0, 1],
-            [0, 2],
+            [0, -1],
             [1, 0],
             [1, 1],
-            [1, 2],
-            [2, 0],
-            [2, 1],
-            [2, 2]
+            [1, -1],
+            [-1, 0],
+            [-1, 1],
+            [-1, -1]
         ],
-        ([x, y]) => room.getPositionAt(x, y)
+        ([x, y]) => room.getPositionAt(x + pos.x, y + pos.y)
     ).filter(p => !!p) as RoomPosition[];
 }

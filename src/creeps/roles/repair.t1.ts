@@ -1,6 +1,7 @@
 import CreepRoleWorker from ".";
 import { createOnlyOwnStructuresFilter } from "../../utils";
 import _ from "lodash";
+import { CreepRoleHarvestName } from "./harvest.t1";
 
 export const CreepRoleRepairT1Name = "RepairT1";
 
@@ -34,7 +35,13 @@ export default class CreepRoleRepairT1 extends CreepRoleWorker<
     }
 
     public getNeededCreeps(room: Room): number {
-        return Math.max((room.controller?.level ?? 0) - 1, 1);
+        return Math.max(
+            Math.min(
+                room.controller?.level ?? 0 - 1,
+                Math.floor(room.energyAvailable / 500)
+            ),
+            1
+        );
     }
 
     public shouldStartProduction(room: Room): boolean {

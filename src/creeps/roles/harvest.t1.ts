@@ -17,11 +17,11 @@ export default class CreepRoleHarvestT1 extends CreepRoleWorker<
         if (data.needsUnloading) {
             if (
                 creep.store[RESOURCE_ENERGY] === 0 ||
-                creep.moveAndTransfer(RESOURCE_ENERGY)
+                !creep.moveAndTransfer(RESOURCE_ENERGY)
             ) {
                 delete data.needsUnloading;
-                return true;
             }
+            return true;
         } else if (creep.store.getFreeCapacity(RESOURCE_ENERGY) === 0) {
             data.needsUnloading = true;
             return this.work(creep);
@@ -38,13 +38,13 @@ export default class CreepRoleHarvestT1 extends CreepRoleWorker<
             }
             return true;
         }
-        return false;
     }
 
     public getNeededCreeps(room: Room): number {
-        let needed = 2;
+        const sources = room.find(FIND_SOURCES);
+        let needed = sources.length;
 
-        for (const source of room.find(FIND_SOURCES)) {
+        for (const source of sources) {
             for (const neighbor of getNeighbors(source.pos)) {
                 if (room.isWalkable(neighbor)) {
                     needed++;
@@ -56,7 +56,7 @@ export default class CreepRoleHarvestT1 extends CreepRoleWorker<
             needed -
             _.filter(
                 room.findCreepsOfRole(this.role),
-                c => c.tier === this.tier + 1
+                c => c.tier && c.tier > this.tier
             ).length
         );
     }

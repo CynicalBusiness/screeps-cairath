@@ -8,11 +8,13 @@ import CreepRoleBuildT1, {
     ICreepRoleBuildData
 } from "./roles/builder.t1";
 import CreepRoleHarvestT2 from "./roles/harvest.t2";
+import CreepRoleHarvestT3 from "./roles/harvest.t3";
 
 export const CreepRoleWorkers: { [K in CreepRoles]: CreepRoleWorker<K>[] } = {
     [CreepRoleHarvestName]: [
         new CreepRoleHarvestT1(),
-        new CreepRoleHarvestT2()
+        new CreepRoleHarvestT2(),
+        new CreepRoleHarvestT3()
     ],
     [CreepRoleUpgradeT1Name]: [new CreepRoleUpgradeT1()],
     [CreepRoleRepairT1Name]: [new CreepRoleRepairT1()],

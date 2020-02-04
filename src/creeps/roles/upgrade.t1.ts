@@ -38,13 +38,7 @@ export default class CreepRoleUpgradeT1 extends CreepRoleWorker<
     }
 
     public getNeededCreeps(room: Room): number {
-        return Math.max(
-            1,
-            Math.min(
-                room.controller?.level ?? 0,
-                Math.floor(room.energyAvailable / 500)
-            )
-        );
+        return Math.max(1, room.controller?.level ?? 0 - this.tier);
     }
 
     public shouldStartProduction(room: Room): boolean {

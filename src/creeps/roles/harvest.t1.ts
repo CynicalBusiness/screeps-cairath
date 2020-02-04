@@ -35,6 +35,9 @@ export default class CreepRoleHarvestT1 extends CreepRoleWorker<
                         visualizePathStyle: { stroke: "#ffaa00" }
                     });
                     break;
+                case ERR_NOT_ENOUGH_RESOURCES:
+                case ERR_TIRED:
+                    return false;
             }
             return true;
         }

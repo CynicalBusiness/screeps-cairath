@@ -15,6 +15,7 @@ interface IDesiredRoleData {
 const prioritiesArray: CreepRole[] = [
     CreepRole.Harvest,
     CreepRole.Upgrade,
+    CreepRole.Collector,
     CreepRole.Build,
     CreepRole.Repair
 ];

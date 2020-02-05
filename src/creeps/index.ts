@@ -7,9 +7,12 @@ import CreepRoleBuildT1 from "./roles/builder.t1";
 import CreepRoleHarvestT2 from "./roles/harvest.t2";
 import CreepRoleHarvestT3 from "./roles/harvest.t3";
 import CreepRoleUpgradeT2 from "./roles/upgrade.t2";
+import CreepRoleCollectorT1 from "./roles/collector.t1";
+import CreepRoleCollectorT2 from "./roles/collector.t2";
 
 export enum CreepRole {
     Build = "build",
+    Collector = "collector",
     Harvest = "harvest",
     Repair = "repair",
     Upgrade = "upgrade"
@@ -17,6 +20,10 @@ export enum CreepRole {
 
 export const CreepRoleWorkers: { [K in CreepRole]: CreepRoleWorker<K>[] } = {
     [CreepRole.Build]: [new CreepRoleBuildT1()],
+    [CreepRole.Collector]: [
+        new CreepRoleCollectorT1(),
+        new CreepRoleCollectorT2()
+    ],
     [CreepRole.Harvest]: [
         new CreepRoleHarvestT1(),
         new CreepRoleHarvestT2(),

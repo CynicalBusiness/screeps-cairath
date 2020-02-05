@@ -3,12 +3,7 @@ import "./prototypes";
 
 import { Dictionary } from "lodash";
 import _ from "lodash";
-import { CreepRoles, CreepRoleWorkers } from "./creeps";
-import { CreepRoleHarvestName } from "./creeps/roles/harvest.t1";
-import { CreepRoleUpgradeT1Name } from "./creeps/roles/upgrade.t1";
-import roles, { RoleName } from "./roles";
-import { CreepRoleRepairT1Name } from "./creeps/roles/repair.t1";
-import { CreepRoleBuildT1Name } from "./creeps/roles/builder.t1";
+import { CreepRole, CreepRoleWorkers } from "./creeps";
 import CreepRoleWorker from "./creeps/roles";
 import operateTower from "./tower";
 
@@ -17,14 +12,14 @@ interface IDesiredRoleData {
     parts?: BodyPartConstant[];
 }
 
-const prioritiesArray: CreepRoles[] = [
-    CreepRoleHarvestName,
-    CreepRoleUpgradeT1Name,
-    CreepRoleBuildT1Name,
-    CreepRoleRepairT1Name
+const prioritiesArray: CreepRole[] = [
+    CreepRole.Harvest,
+    CreepRole.Upgrade,
+    CreepRole.Build,
+    CreepRole.Repair
 ];
 const priorities = _.fromPairs(prioritiesArray.map((w, i) => [w, i])) as Record<
-    CreepRoles,
+    CreepRole,
     number
 >;
 
@@ -34,11 +29,11 @@ export const loop = ErrorMapper.wrapLoop(() => {
     // console.log(`Current game tick is ${Game.time}`);
 
     const currentRoleWantedPerRoom: Dictionary<Record<
-        CreepRoles,
+        CreepRole,
         number[]
     >> = {};
     const currentRoleCountsPerRoom: Dictionary<Record<
-        CreepRoles,
+        CreepRole,
         number[]
     >> = {};
     const maxTierPerRoom: Dictionary<number> = {};
@@ -111,7 +106,7 @@ export const loop = ErrorMapper.wrapLoop(() => {
         if (wanted) {
             const counts = currentRoleCountsPerRoom[roomName];
             const rolesPriority = _.sortBy(
-                Object.keys(priorities) as CreepRoles[],
+                Object.keys(priorities) as CreepRole[],
                 name => priorities[name]
             );
 
@@ -141,11 +136,9 @@ export const loop = ErrorMapper.wrapLoop(() => {
                                     console.log(
                                         `Spawned ${roomName}/${
                                             spawn.name
-                                        }: ${role} T${tier + 1} (${(counts[
-                                            role
-                                        ][tier] ?? 0) + 1}/${
-                                            wanted[role][tier]
-                                        })`
+                                        }: ${role}-${tier + 1} (${(counts[role][
+                                            tier
+                                        ] ?? 0) + 1}/${wanted[role][tier]})`
                                     );
                                 }
                                 break forEachTier;

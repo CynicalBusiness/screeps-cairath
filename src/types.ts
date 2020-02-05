@@ -1,4 +1,4 @@
-import { CreepRoles, ICreepRoleWorkerData } from "./creeps";
+import { ICreepRoleWorkerData, CreepRole } from "./creeps";
 import CreepRoleWorker from "./creeps/roles";
 import { RoomRole, IRoomRoleMemoryData } from "./command";
 import RoomDispatcher from "./command/dispatchers";
@@ -9,13 +9,13 @@ export type CreepRoleOf<W extends CreepRoleWorker> = W extends CreepRoleWorker<
     ? T
     : never;
 
-export interface ICreepRoleMemory<TRole extends CreepRoles = CreepRoles> {
+export interface ICreepRoleMemory<TRole extends CreepRole = CreepRole> {
     name: TRole;
     data: ICreepRoleWorkerData[TRole];
     tier: number;
 }
 
-export interface ICreepWithRole<TRole extends CreepRoles> extends Creep {
+export interface ICreepWithRole<TRole extends CreepRole> extends Creep {
     memory: CreepMemory<TRole>;
 }
 
@@ -31,7 +31,7 @@ declare global {
 
     interface Creep {
         /** The current role of this creep, if any */
-        role?: CreepRoles;
+        role?: CreepRole;
 
         /** The tier of this creep */
         tier?: number;
@@ -61,8 +61,8 @@ declare global {
          * Determines if a creep has a given role.
          * @param role The role to check
          */
-        isRole<TRole extends CreepRoles>(
-            role: CreepRoles
+        isRole<TRole extends CreepRole>(
+            role: CreepRole
         ): this is ICreepWithRole<TRole>;
     }
 
@@ -71,11 +71,21 @@ declare global {
         isWalkable(room: RoomPosition): boolean;
 
         /**
-         * Finds all creeps
-         * @param role
+         * Finds all creeps with a given role
+         * @param role The role to search for
          */
-        findCreepsOfRole<TRole extends CreepRoles>(
+        findCreepsOfRole<TRole extends CreepRole>(
             role: TRole
+        ): ICreepWithRole<TRole>[];
+
+        /**
+         * Find all creeps with a given role of at least (`>=`) a given tier
+         * @param role The role to search for
+         * @param tier The tier to search for
+         */
+        findCreepsOfRoleWithAtLeastTier<TRole extends CreepRole>(
+            role: TRole,
+            tier: number
         ): ICreepWithRole<TRole>[];
 
         /**
@@ -114,7 +124,7 @@ declare global {
         hasRole(role: RoomRole): boolean;
     }
 
-    interface CreepMemory<TRole extends CreepRoles = CreepRoles> {
+    interface CreepMemory<TRole extends CreepRole = CreepRole> {
         role: ICreepRoleMemory<TRole>;
         homeRoom?: string;
         needsRenewing?: boolean;
@@ -122,7 +132,7 @@ declare global {
     }
 
     interface StructureSpawn {
-        spawnCreepWithRole(role: CreepRoles, tier?: number): ScreepsReturnCode;
+        spawnCreepWithRole(role: CreepRole, tier?: number): ScreepsReturnCode;
 
         getCapacityIncludingExtensions(
             resource: ResourceConstant

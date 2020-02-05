@@ -1,18 +1,15 @@
 import CreepRoleWorker from ".";
-import { createOnlyOwnStructuresFilter } from "../../utils";
 import _ from "lodash";
-import { CreepRoleHarvestName } from "./harvest.t1";
 import { ICreepWithRole } from "../../types";
-
-export const CreepRoleRepairT1Name = "RepairT1";
+import { CreepRole } from "..";
 
 export default class CreepRoleRepairT1 extends CreepRoleWorker<
-    typeof CreepRoleRepairT1Name
+    CreepRole.Repair
 > {
     public readonly neededParts = [WORK, MOVE, CARRY];
-    public readonly role = CreepRoleRepairT1Name;
+    public readonly role = CreepRole.Repair;
 
-    public work(creep: ICreepWithRole<typeof CreepRoleRepairT1Name>): boolean {
+    public work(creep: ICreepWithRole<CreepRole.Repair>): boolean {
         const { data } = creep.memory.role;
         if (creep.carry[RESOURCE_ENERGY] === 0) {
             delete data.target;
@@ -35,15 +32,13 @@ export default class CreepRoleRepairT1 extends CreepRoleWorker<
         return Math.max(
             Math.min(
                 room.controller?.level ?? 0 - 1,
-                Math.floor(
-                    room.findCreepsOfRole(CreepRoleHarvestName).length / 3
-                )
+                Math.floor(room.findCreepsOfRole(CreepRole.Harvest).length / 3)
             ),
             1
         );
     }
 
-    public createNewRoleData(spawn: StructureSpawn) {
+    public createNewRoleData() {
         return {};
     }
 }

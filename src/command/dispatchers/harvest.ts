@@ -1,6 +1,6 @@
 import RoomDispatcher from ".";
 import { RoomRole, IRoomRoleMemoryData } from "..";
-import { CreepRoleHarvestName } from "../../creeps/roles/harvest.t1";
+import { CreepRole } from "../../creeps";
 
 export default class RoomDispatcherHarvest extends RoomDispatcher<
     RoomRole.Harvest
@@ -12,7 +12,7 @@ export default class RoomDispatcherHarvest extends RoomDispatcher<
 
         // TODO be more practical with flags and such
         let sourceIdx = 0;
-        const creeps = room.findCreepsOfRole(CreepRoleHarvestName);
+        const creeps = room.findCreepsOfRole(CreepRole.Harvest);
         for (const creep of creeps) {
             creep.memory.role.data.source = sources[sourceIdx++].id;
             sourceIdx %= 2;

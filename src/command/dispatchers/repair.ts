@@ -1,9 +1,8 @@
 import RoomDispatcher from ".";
 import { RoomRole, IRoomRoleMemoryData } from "..";
-import { CreepRoleHarvestName } from "../../creeps/roles/harvest.t1";
 import { createOnlyOwnStructuresFilter } from "../../utils";
-import { CreepRoleRepairT1Name } from "../../creeps/roles/repair.t1";
 import _ from "lodash";
+import { CreepRole } from "../../creeps";
 
 export default class RoomDispatcherRepair extends RoomDispatcher<
     RoomRole.Repair
@@ -14,7 +13,7 @@ export default class RoomDispatcherRepair extends RoomDispatcher<
         if (!data.targets) data.targets = {};
 
         const creeps = _.filter(
-            room.findCreepsOfRole(CreepRoleRepairT1Name),
+            room.findCreepsOfRole(CreepRole.Repair),
             c => !c.memory.role.data.target
         );
 

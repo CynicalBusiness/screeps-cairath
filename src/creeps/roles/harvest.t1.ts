@@ -2,16 +2,15 @@ import CreepRoleWorker from ".";
 import { getNeighbors } from "../../utils";
 import { ICreepWithRole } from "../../types";
 import _ from "lodash";
-
-export const CreepRoleHarvestName = "Harvest";
+import { CreepRole } from "..";
 
 export default class CreepRoleHarvestT1 extends CreepRoleWorker<
-    typeof CreepRoleHarvestName
+    typeof CreepRole.Harvest
 > {
     public readonly neededParts = [WORK, MOVE, CARRY];
-    public readonly role = CreepRoleHarvestName;
+    public readonly role = CreepRole.Harvest;
 
-    public work(creep: ICreepWithRole<typeof CreepRoleHarvestName>): boolean {
+    public work(creep: ICreepWithRole<CreepRole.Harvest>): boolean {
         const { data } = creep.memory.role;
 
         if (data.needsUnloading) {
@@ -57,10 +56,8 @@ export default class CreepRoleHarvestT1 extends CreepRoleWorker<
 
         return (
             needed -
-            _.filter(
-                room.findCreepsOfRole(this.role),
-                c => c.tier && c.tier > this.tier
-            ).length
+            room.findCreepsOfRoleWithAtLeastTier(this.role, this.tier + 1)
+                .length
         );
     }
 

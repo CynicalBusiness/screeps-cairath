@@ -1,4 +1,4 @@
-import { CreepRoleWorkers, ICreepRoleWorkerData, CreepRoles } from "./creeps";
+import { CreepRoleWorkers, CreepRole } from "./creeps";
 import {
     moveToParking,
     renewIfNeeded,
@@ -112,7 +112,7 @@ Creep.prototype.renewIfNeeded = function(): boolean {
     return renewIfNeeded(this);
 };
 
-Creep.prototype.isRole = function(roleName: CreepRoles): boolean {
+Creep.prototype.isRole = function(roleName: CreepRole): boolean {
     const { role } = this.memory;
     return role && role.name === roleName;
 };
@@ -128,13 +128,25 @@ Room.prototype.isWalkable = function(pos): boolean {
     );
 };
 
-Room.prototype.findCreepsOfRole = function<TRole extends CreepRoles>(
+Room.prototype.findCreepsOfRole = function<TRole extends CreepRole>(
     role: TRole,
     tier?: number
 ): ICreepWithRole<TRole>[] {
     return this.find(FIND_MY_CREEPS, {
-        filter: c => c.isRole(role) && (tier === undefined || c.tier === tier)
+        filter: c =>
+            c.isRole(role) &&
+            (tier === undefined || c.tier === tier) &&
+            !c.memory.markedForRecycling
     }) as ICreepWithRole<TRole>[];
+};
+
+Room.prototype.findCreepsOfRoleWithAtLeastTier = function<
+    TRole extends CreepRole
+>(role: TRole, tier: number): ICreepWithRole<TRole>[] {
+    return _.filter(
+        this.findCreepsOfRole(role),
+        c => !!c.tier && c.tier >= tier
+    );
 };
 
 Room.prototype.getDispatchers = function(): RoomDispatcher[] {
@@ -171,23 +183,19 @@ Room.prototype.hasRole = function(role: RoomRole): boolean {
 };
 
 StructureSpawn.prototype.spawnCreepWithRole = function(
-    role: CreepRoles,
+    role: CreepRole,
     tier: number = 1
 ): ScreepsReturnCode {
     const worker = CreepRoleWorkers[role][tier - 1];
     if (!worker) {
         console.log(
-            `Tried spawning creep ${role}T${tier}, but no such worker was found`
+            `Tried spawning creep ${role}-${tier}, but no such worker was found`
         );
         return ERR_INVALID_TARGET;
     }
-    return this.spawnCreep(
-        worker.neededParts,
-        `${role}T${tier} - ${Game.time}`,
-        {
-            memory: worker.createNewMemory(this)
-        }
-    );
+    return this.spawnCreep(worker.neededParts, `${role}-${tier}-${Game.time}`, {
+        memory: worker.createNewMemory(this)
+    });
 };
 
 StructureSpawn.prototype.getCapacityIncludingExtensions = function(

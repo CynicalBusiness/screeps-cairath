@@ -1,16 +1,15 @@
 import CreepRoleWorker from ".";
 import _ from "lodash";
 import { ICreepWithRole } from "../../types";
-
-export const CreepRoleUpgradeT1Name = "UpgradeT1";
+import { CreepRole } from "..";
 
 export default class CreepRoleUpgradeT1 extends CreepRoleWorker<
-    typeof CreepRoleUpgradeT1Name
+    CreepRole.Upgrade
 > {
     public readonly neededParts = [WORK, MOVE, CARRY];
-    public readonly role = CreepRoleUpgradeT1Name;
+    public readonly role = CreepRole.Upgrade;
 
-    public work(creep: ICreepWithRole<typeof CreepRoleUpgradeT1Name>): boolean {
+    public work(creep: ICreepWithRole<CreepRole.Upgrade>): boolean {
         const { data } = creep.memory.role;
 
         if (data.upgrading) {
@@ -40,14 +39,12 @@ export default class CreepRoleUpgradeT1 extends CreepRoleWorker<
     public getNeededCreeps(room: Room): number {
         return (
             Math.max(1, (room.controller?.level ?? 0) - this.tier + 1) -
-            _.filter(
-                room.findCreepsOfRole(this.role),
-                c => c.tier && c.tier > this.tier
-            ).length
+            room.findCreepsOfRoleWithAtLeastTier(this.role, this.tier + 1)
+                .length
         );
     }
 
-    public createNewRoleData(spawn: StructureSpawn) {
+    public createNewRoleData() {
         return {};
     }
 }

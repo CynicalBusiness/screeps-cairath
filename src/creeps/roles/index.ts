@@ -1,9 +1,9 @@
-import { CreepRoles, ICreepRoleWorkerData, CreepRoleWorkers } from "..";
+import { ICreepRoleWorkerData, CreepRoleWorkers, CreepRole } from "..";
 import { ICreepWithRole } from "../../types";
 
 /** A singleton class used for controlling different kinds of creeps */
 export default abstract class CreepRoleWorker<
-    TRole extends CreepRoles = CreepRoles
+    TRole extends CreepRole = CreepRole
 > {
     public abstract neededParts: BodyPartConstant[];
     public abstract role: TRole;

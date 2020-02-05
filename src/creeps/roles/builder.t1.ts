@@ -1,21 +1,13 @@
 import CreepRoleWorker from ".";
 import _ from "lodash";
 import { ICreepWithRole } from "../../types";
-import { CreepRoleHarvestName } from "./harvest.t1";
+import { CreepRole } from "..";
 
-export const CreepRoleBuildT1Name = "BuildT1";
-
-export interface ICreepRoleBuildData {
-    target?: string;
-}
-
-export default class CreepRoleBuildT1 extends CreepRoleWorker<
-    typeof CreepRoleBuildT1Name
-> {
+export default class CreepRoleBuildT1 extends CreepRoleWorker<CreepRole.Build> {
     public readonly neededParts = [WORK, MOVE, CARRY];
-    public readonly role = CreepRoleBuildT1Name;
+    public readonly role = CreepRole.Build;
 
-    public work(creep: ICreepWithRole<typeof CreepRoleBuildT1Name>): boolean {
+    public work(creep: ICreepWithRole<CreepRole.Build>): boolean {
         const { data } = creep.memory.role;
         if (!data.target) {
             if (creep.refillIfNeeded(RESOURCE_ENERGY)) return true;
@@ -54,9 +46,7 @@ export default class CreepRoleBuildT1 extends CreepRoleWorker<
         return Math.max(
             1,
             Math.min(
-                Math.floor(
-                    room.findCreepsOfRole(CreepRoleHarvestName).length / 2
-                ),
+                Math.floor(room.findCreepsOfRole(CreepRole.Harvest).length / 2),
                 Math.floor(room.find(FIND_MY_CONSTRUCTION_SITES).length / 2)
             )
         );

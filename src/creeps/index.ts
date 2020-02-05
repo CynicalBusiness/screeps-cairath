@@ -9,6 +9,7 @@ import CreepRoleBuildT1, {
 } from "./roles/builder.t1";
 import CreepRoleHarvestT2 from "./roles/harvest.t2";
 import CreepRoleHarvestT3 from "./roles/harvest.t3";
+import CreepRoleUpgradeT2 from "./roles/upgrade.t2";
 
 export const CreepRoleWorkers: { [K in CreepRoles]: CreepRoleWorker<K>[] } = {
     [CreepRoleHarvestName]: [
@@ -16,7 +17,10 @@ export const CreepRoleWorkers: { [K in CreepRoles]: CreepRoleWorker<K>[] } = {
         new CreepRoleHarvestT2(),
         new CreepRoleHarvestT3()
     ],
-    [CreepRoleUpgradeT1Name]: [new CreepRoleUpgradeT1()],
+    [CreepRoleUpgradeT1Name]: [
+        new CreepRoleUpgradeT1(),
+        new CreepRoleUpgradeT2()
+    ],
     [CreepRoleRepairT1Name]: [new CreepRoleRepairT1()],
     [CreepRoleBuildT1Name]: [new CreepRoleBuildT1()]
 };
@@ -28,7 +32,9 @@ export interface ICreepRoleWorkerData
         needsUnloading?: boolean;
         spawnName: string;
     };
-    [CreepRoleUpgradeT1Name]: {};
+    [CreepRoleUpgradeT1Name]: {
+        upgrading?: boolean;
+    };
     [CreepRoleRepairT1Name]: {
         target?: Id<Structure>;
     };

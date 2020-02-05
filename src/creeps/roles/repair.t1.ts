@@ -43,10 +43,6 @@ export default class CreepRoleRepairT1 extends CreepRoleWorker<
         );
     }
 
-    public shouldStartProduction(room: Room): boolean {
-        return !!room.controller;
-    }
-
     public createNewRoleData(spawn: StructureSpawn) {
         return {};
     }

@@ -34,7 +34,13 @@ export default abstract class CreepRoleWorker<
     /**
      * Whether or not to produce this kind of creep.
      */
-    public abstract shouldStartProduction(room: Room): boolean;
+    public shouldStartProduction(room: Room): boolean {
+        return (
+            !!room.controller &&
+            room.controller.my &&
+            Math.max(room.controller.level, 1) >= this.tier
+        );
+    }
 
     public abstract createNewRoleData(
         spawn: StructureSpawn

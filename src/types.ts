@@ -119,7 +119,6 @@ declare global {
         homeRoom?: string;
         needsRenewing?: boolean;
         markedForRecycling?: boolean;
-        upgrading?: boolean;
     }
 
     interface StructureSpawn {

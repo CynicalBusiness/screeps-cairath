@@ -54,15 +54,12 @@ export default class CreepRoleBuildT1 extends CreepRoleWorker<
         return Math.max(
             1,
             Math.min(
-                Math.floor(room.findCreepsOfRole(CreepRoleHarvestName).length / 2),
+                Math.floor(
+                    room.findCreepsOfRole(CreepRoleHarvestName).length / 2
+                ),
                 Math.floor(room.find(FIND_MY_CONSTRUCTION_SITES).length / 2)
             )
         );
-    }
-
-    public shouldStartProduction(room: Room): boolean {
-        // TODO actually check this somehow
-        return true;
     }
 
     public createNewRoleData(spawn: StructureSpawn) {

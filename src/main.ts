@@ -53,7 +53,7 @@ export const loop = ErrorMapper.wrapLoop(() => {
             _.each(prioritiesArray, role => {
                 counts[role] = _.map<CreepRoleWorker, number>(
                     CreepRoleWorkers[role],
-                    w => w.getNeededCreeps(spawn.room)
+                    w => Math.max(Math.floor(w.getNeededCreeps(spawn.room)), 0)
                 );
                 maxTierPerRoom[roomName] = Math.max(
                     maxTierPerRoom[roomName],
@@ -107,9 +107,9 @@ export const loop = ErrorMapper.wrapLoop(() => {
             _.each(towers, operateTower);
         }
 
-        if (roomName in Object.keys(currentRoleWantedPerRoom)) {
+        const wanted = currentRoleWantedPerRoom[roomName];
+        if (wanted) {
             const counts = currentRoleCountsPerRoom[roomName];
-            const wanted = currentRoleWantedPerRoom[roomName];
             const rolesPriority = _.sortBy(
                 Object.keys(priorities) as CreepRoles[],
                 name => priorities[name]

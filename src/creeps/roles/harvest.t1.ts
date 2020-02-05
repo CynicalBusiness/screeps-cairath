@@ -64,10 +64,6 @@ export default class CreepRoleHarvestT1 extends CreepRoleWorker<
         );
     }
 
-    public shouldStartProduction(room: Room): boolean {
-        return !!room.controller && room.controller.level >= this.tier;
-    }
-
     public createNewRoleData(spawn: StructureSpawn) {
         return {
             spawnName: spawn.name

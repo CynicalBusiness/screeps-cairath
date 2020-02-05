@@ -19,13 +19,18 @@ export default class RoomDispatcherRepair extends RoomDispatcher<
         );
 
         if (creeps.length) {
+            const hasTower =
+                room.find(FIND_MY_STRUCTURES, {
+                    filter: st => st instanceof StructureTower
+                }).length > 0;
             const structs = _.sortBy(
                 room.find(
                     FIND_STRUCTURES,
                     createOnlyOwnStructuresFilter(
                         st =>
                             st.hits < st.hitsMax &&
-                            !(st.id in Object.values(data.targets!))
+                            !(st.id in Object.values(data.targets!)) &&
+                            (!(st instanceof StructureRoad) || !hasTower)
                     )
                 ),
                 st => st.hits

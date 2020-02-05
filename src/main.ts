@@ -10,6 +10,7 @@ import roles, { RoleName } from "./roles";
 import { CreepRoleRepairT1Name } from "./creeps/roles/repair.t1";
 import { CreepRoleBuildT1Name } from "./creeps/roles/builder.t1";
 import CreepRoleWorker from "./creeps/roles";
+import operateTower from "./tower";
 
 interface IDesiredRoleData {
     amount: number;
@@ -97,48 +98,58 @@ export const loop = ErrorMapper.wrapLoop(() => {
     });
 
     // spawn creeps up to needed values
-    for (const roomName of Object.keys(currentRoleWantedPerRoom)) {
-        const counts = currentRoleCountsPerRoom[roomName];
-        const wanted = currentRoleWantedPerRoom[roomName];
-        const rolesPriority = _.sortBy(
-            Object.keys(priorities) as CreepRoles[],
-            name => priorities[name]
-        );
-
-        const room = Game.rooms[roomName];
+    for (const [roomName, room] of _.toPairs(Game.rooms)) {
         room.dispatchAll();
+        const towers = room.find(FIND_MY_STRUCTURES, {
+            filter: st => st instanceof StructureTower
+        }) as StructureTower[];
+        if (towers.length) {
+            _.each(towers, operateTower);
+        }
 
-        const spawns = room.find(FIND_MY_SPAWNS);
-        if (!spawns.length) continue;
+        if (roomName in Object.keys(currentRoleWantedPerRoom)) {
+            const counts = currentRoleCountsPerRoom[roomName];
+            const wanted = currentRoleWantedPerRoom[roomName];
+            const rolesPriority = _.sortBy(
+                Object.keys(priorities) as CreepRoles[],
+                name => priorities[name]
+            );
 
-        forEachTier: for (
-            let tier = 0;
-            tier < maxTierPerRoom[roomName];
-            tier++
-        ) {
-            for (const role of rolesPriority) {
-                const worker = CreepRoleWorkers[role][tier];
-                if (!worker) continue;
-                if (wanted[role]) {
-                    if (
-                        (counts[role][tier] === undefined ||
-                            counts[role][tier] < wanted[role][tier]) &&
-                        worker.shouldStartProduction(room)
-                    ) {
-                        for (const spawn of spawns) {
-                            if (
-                                !spawn.spawning &&
-                                spawn.spawnCreepWithRole(role, tier + 1) === OK
-                            ) {
-                                console.log(
-                                    `Spawned ${roomName}/${
-                                        spawn.name
-                                    }: ${role} T${tier + 1} (${(counts[role][
-                                        tier
-                                    ] ?? 0) + 1}/${wanted[role][tier]})`
-                                );
+            const spawns = room.find(FIND_MY_SPAWNS);
+            if (!spawns.length) continue;
+
+            forEachTier: for (
+                let tier = 0;
+                tier < maxTierPerRoom[roomName];
+                tier++
+            ) {
+                for (const role of rolesPriority) {
+                    const worker = CreepRoleWorkers[role][tier];
+                    if (!worker) continue;
+                    if (wanted[role]) {
+                        if (
+                            (counts[role][tier] === undefined ||
+                                counts[role][tier] < wanted[role][tier]) &&
+                            worker.shouldStartProduction(room)
+                        ) {
+                            for (const spawn of spawns) {
+                                if (
+                                    !spawn.spawning &&
+                                    spawn.spawnCreepWithRole(role, tier + 1) ===
+                                        OK
+                                ) {
+                                    console.log(
+                                        `Spawned ${roomName}/${
+                                            spawn.name
+                                        }: ${role} T${tier + 1} (${(counts[
+                                            role
+                                        ][tier] ?? 0) + 1}/${
+                                            wanted[role][tier]
+                                        })`
+                                    );
+                                }
+                                break forEachTier;
                             }
-                            break forEachTier;
                         }
                     }
                 }
@@ -150,19 +161,6 @@ export const loop = ErrorMapper.wrapLoop(() => {
     for (const name in Memory.creeps) {
         if (!(name in Game.creeps)) {
             delete Memory.creeps[name];
-        }
-    }
-
-    // TODO tutorial tower code
-    const tower = Game.getObjectById(
-        "5e371a6574f61451715078f8" as Id<StructureTower>
-    );
-    if (tower) {
-        const closestHostile = tower.pos.findClosestByRange(
-            FIND_HOSTILE_CREEPS
-        );
-        if (closestHostile) {
-            tower.attack(closestHostile);
         }
     }
 });

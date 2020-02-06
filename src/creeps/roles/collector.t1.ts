@@ -50,7 +50,14 @@ export default class CreepRoleCollectorT1 extends CreepRoleWorker<
                 default:
                     return false;
             }
-        } else if (room.energyAvailable < room.energyCapacityAvailable) {
+        } else if (
+            room.energyAvailable < room.energyCapacityAvailable ||
+            room.find(FIND_MY_STRUCTURES, {
+                filter: s =>
+                    s instanceof StructureTower &&
+                    s.store.getFreeCapacity(RESOURCE_ENERGY) > 200
+            }).length
+        ) {
             return creep.moveAndWithdraw(RESOURCE_ENERGY);
         } else return false;
     }

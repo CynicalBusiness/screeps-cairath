@@ -38,7 +38,7 @@ export default class CreepRoleUpgradeT1 extends CreepRoleWorker<
 
     public getNeededCreeps(room: Room): number {
         return (
-            Math.max(1, (room.controller?.level ?? 0) - this.tier + 1) -
+            Math.max(1, (room.controller?.level ?? 0) - this.tier) -
             room.findCreepsOfRoleWithAtLeastTier(this.role, this.tier + 1)
                 .length
         );

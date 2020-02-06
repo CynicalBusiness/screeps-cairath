@@ -54,7 +54,7 @@ export default class CreepRoleBuildT1 extends CreepRoleWorker<CreepRole.Build> {
                         _.sumBy(
                             room.find(FIND_MY_CONSTRUCTION_SITES),
                             c => c.progressTotal
-                        ) / 20000
+                        ) / 25000
                     )
                 )
             ) -

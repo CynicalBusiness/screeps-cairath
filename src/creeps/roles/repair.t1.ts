@@ -29,12 +29,18 @@ export default class CreepRoleRepairT1 extends CreepRoleWorker<
     }
 
     public getNeededCreeps(room: Room): number {
-        return Math.max(
-            Math.min(
-                room.controller?.level ?? 0 - 1,
-                Math.floor(room.findCreepsOfRole(CreepRole.Harvest).length / 3)
-            ),
-            1
+        return (
+            Math.max(
+                Math.min(
+                    room.controller?.level ?? 0 - 1,
+                    Math.floor(
+                        room.findCreepsOfRole(CreepRole.Harvest).length / 3
+                    )
+                ),
+                1
+            ) -
+            room.findCreepsOfRoleWithAtLeastTier(this.role, this.tier + 1)
+                .length
         );
     }
 

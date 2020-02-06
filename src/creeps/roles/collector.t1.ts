@@ -56,7 +56,11 @@ export default class CreepRoleCollectorT1 extends CreepRoleWorker<
     }
 
     public getNeededCreeps(room: Room): number {
-        return 1;
+        return (
+            2 -
+            room.findCreepsOfRoleWithAtLeastTier(this.role, this.tier + 1)
+                .length
+        );
     }
 
     public createNewRoleData() {

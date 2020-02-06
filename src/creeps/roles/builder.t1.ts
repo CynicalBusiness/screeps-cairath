@@ -43,12 +43,23 @@ export default class CreepRoleBuildT1 extends CreepRoleWorker<CreepRole.Build> {
     }
 
     public getNeededCreeps(room: Room): number {
-        return Math.max(
-            1,
-            Math.min(
-                Math.floor(room.findCreepsOfRole(CreepRole.Harvest).length / 2),
-                Math.floor(room.find(FIND_MY_CONSTRUCTION_SITES).length / 2)
-            )
+        return (
+            Math.max(
+                1,
+                Math.min(
+                    Math.floor(
+                        room.findCreepsOfRole(CreepRole.Harvest).length / 2
+                    ),
+                    Math.ceil(
+                        _.sumBy(
+                            room.find(FIND_MY_CONSTRUCTION_SITES),
+                            c => c.progressTotal
+                        ) / 20000
+                    )
+                )
+            ) -
+            room.findCreepsOfRoleWithAtLeastTier(this.role, this.tier + 1)
+                .length
         );
     }
 

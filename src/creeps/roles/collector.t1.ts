@@ -18,11 +18,15 @@ export default class CreepRoleCollectorT1 extends CreepRoleWorker<
             );
         }
 
+        // TODO make this work with more than just energy
         const toCollectFilter = {
-            filter: (st: Tombstone | Ruin) => st.store.getUsedCapacity() > 0
+            filter: (st: Tombstone | Ruin) =>
+                st.store.getUsedCapacity(RESOURCE_ENERGY) > 0
         };
         const toCollect = [
-            ...room.find(FIND_DROPPED_RESOURCES),
+            ...room.find(FIND_DROPPED_RESOURCES, {
+                filter: r => r.resourceType === RESOURCE_ENERGY
+            }),
             ...room.find(FIND_TOMBSTONES, toCollectFilter),
             ...room.find(FIND_RUINS, toCollectFilter)
         ][0];
@@ -32,7 +36,8 @@ export default class CreepRoleCollectorT1 extends CreepRoleWorker<
                     ? creep.pickup(toCollect)
                     : creep.withdraw(
                           toCollect,
-                          Object.keys(toCollect.store)[0] as ResourceConstant
+                          RESOURCE_ENERGY
+                          //   Object.keys(toCollect.store)[0] as ResourceConstant
                       )
             ) {
                 case OK:

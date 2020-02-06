@@ -16,7 +16,7 @@ export default class CreepRoleHarvestT1 extends CreepRoleWorker<
         if (data.needsUnloading) {
             if (
                 creep.store[RESOURCE_ENERGY] === 0 ||
-                !creep.moveAndTransfer(RESOURCE_ENERGY)
+                !this.tryToUnload(creep)
             ) {
                 delete data.needsUnloading;
             }
@@ -65,5 +65,27 @@ export default class CreepRoleHarvestT1 extends CreepRoleWorker<
         return {
             spawnName: spawn.name
         };
+    }
+
+    private tryToUnload(creep: ICreepWithRole<CreepRole.Harvest>): boolean {
+        const { room } = creep;
+        const storage = _.sortBy(
+            room.find(FIND_MY_STRUCTURES, {
+                filter: s => s instanceof StructureStorage
+            }) as StructureStorage[],
+            st => st.store.getFreeCapacity(RESOURCE_ENERGY)
+        ).reverse()[0];
+
+        if (storage && storage.store.getFreeCapacity(RESOURCE_ENERGY) > 0) {
+            switch (creep.transfer(storage, RESOURCE_ENERGY)) {
+                case ERR_NOT_IN_RANGE:
+                    creep.moveTo(storage);
+                    return true;
+                case OK:
+                    return true;
+                default:
+                    return false;
+            }
+        } else return creep.moveAndTransfer(RESOURCE_ENERGY);
     }
 }

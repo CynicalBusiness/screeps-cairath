@@ -119,12 +119,25 @@ Creep.prototype.isRole = function(roleName: CreepRole): boolean {
 
 Room.prototype.isWalkable = function(pos): boolean {
     // TODO check non-walkable structures
+    const structs = pos.findInRange(FIND_STRUCTURES, 0);
+    const sites = [...pos.findInRange(FIND_CONSTRUCTION_SITES, 0), ...structs];
+
+    const nonWalkableStructures = [
+        STRUCTURE_SPAWN,
+        STRUCTURE_EXTENSION,
+        STRUCTURE_STORAGE,
+        STRUCTURE_LINK,
+        STRUCTURE_WALL
+    ];
+
+    const hasRoad = !!_.find(
+        structs,
+        st => st.structureType === STRUCTURE_ROAD
+    );
     return (
-        this.find(FIND_STRUCTURES, {
-            filter: s =>
-                s.structureType === STRUCTURE_ROAD && s.pos.isEqualTo(pos)
-        }).length > 0 ||
-        (this.getTerrain().get(pos.x, pos.y) & TERRAIN_MASK_WALL) === 0
+        hasRoad ||
+        ((this.getTerrain().get(pos.x, pos.y) & TERRAIN_MASK_WALL) === 0 &&
+            !_.find(sites, s => s.structureType in nonWalkableStructures))
     );
 };
 

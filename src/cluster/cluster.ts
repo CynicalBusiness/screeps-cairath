@@ -223,6 +223,16 @@ export class CynClusterManager extends GameLoopConsumer {
             : [...this.#cache.sources];
     }
 
+    /**
+     * Cleans up memory, called each tick
+     */
+    public cleanupMemory(): void {
+        // clean up memory of creeps that are dead
+        for (const creepName of Object.keys(this.memory.creeps)) {
+            if (!Game.creeps[creepName]) delete this.memory.creeps[creepName];
+        }
+    }
+
     public onLoop(): void {
         // spawn creeps to correct amount
         // TODO use all spawns
@@ -263,5 +273,8 @@ export class CynClusterManager extends GameLoopConsumer {
 
         // make creeps do their things
         this.creepController.actAll();
+
+        // finally, clean up
+        this.cleanupMemory();
     }
 }

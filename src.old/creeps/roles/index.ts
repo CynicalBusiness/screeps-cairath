@@ -35,7 +35,7 @@ export default abstract class CreepRoleWorker<
      * Whether or not to produce this kind of creep.
      */
     public shouldStartProduction(room: Room): boolean {
-        return (
+        return !!(
             !!room.controller &&
             room.controller.my &&
             Math.max(room.controller.level, 1) >= this.tier
@@ -52,8 +52,8 @@ export default abstract class CreepRoleWorker<
             role: {
                 name: this.role,
                 data: this.createNewRoleData(spawn),
-                tier: this.tier
-            }
+                tier: this.tier,
+            },
         };
     }
 
@@ -61,7 +61,7 @@ export default abstract class CreepRoleWorker<
         spawn: StructureSpawn
     ): Omit<CreepMemory, "role"> {
         return {
-            homeRoom: spawn.room.name
+            homeRoom: spawn.room.name,
         };
     }
 }

@@ -10,7 +10,7 @@ export function moveToParking(creep: Creep) {
 
     if (parkingFlag) {
         creep.moveTo(parkingFlag, {
-            visualizePathStyle: { stroke: "#0000FF" }
+            visualizePathStyle: { stroke: "#0000FF" },
         });
     }
 }
@@ -20,7 +20,7 @@ export const STORAGE_PRIORITIES = [
     STRUCTURE_EXTENSION,
     STRUCTURE_TOWER,
     STRUCTURE_CONTAINER,
-    STRUCTURE_STORAGE
+    STRUCTURE_STORAGE,
 ];
 
 export type StorageStructures =
@@ -38,7 +38,7 @@ export function getStorages<R extends ResourceConstant>(
 ): StorageStructures[] {
     const storages = _.sortBy(
         room.find(FIND_STRUCTURES, {
-            filter: st =>
+            filter: (st) =>
                 (st instanceof StructureSpawn ||
                     st instanceof StructureExtension ||
                     st instanceof StructureTower ||
@@ -46,9 +46,9 @@ export function getStorages<R extends ResourceConstant>(
                     st instanceof StructureStorage) &&
                 filter(st) &&
                 ((st instanceof OwnedStructure && st.my) ||
-                    (room.controller && room.controller.my))
+                    (room.controller && room.controller.my)),
         }) as StorageStructures[],
-        st => STORAGE_PRIORITIES.indexOf(st.structureType)
+        (st) => STORAGE_PRIORITIES.indexOf(st.structureType)
     );
     if (reversePriority) _.reverse(storages);
     return storages;
@@ -63,14 +63,16 @@ export function getStorage<R extends ResourceConstant>(
     return getStorages(room, resource, filter, reversePriority)[0];
 }
 
-export function getStorageWithAvailableSpace(
-    room: Room,
-    resource: ResourceConstant
-) {
+export function getStorageWithAvailableSpace<
+    TResource extends ResourceConstant
+>(room: Room, resource: TResource) {
     return getStorage(
         room,
         resource,
-        st => st.store.getFreeCapacity(resource) > 0
+        (st) =>
+            ((st.store as any) as Store<TResource, false>).getFreeCapacity(
+                resource
+            ) > 0
     );
 }
 
@@ -82,7 +84,7 @@ export function getStorageWithAvailableResource(
     const storages = getStorages(
         room,
         resource,
-        st =>
+        (st) =>
             !(st instanceof StructureTower) &&
             !_.isNil(st.store[resource]) &&
             st.store[resource] > 0,
@@ -91,7 +93,7 @@ export function getStorageWithAvailableResource(
     if (ignoreSpawnIfOthersAvailable) {
         const storagesWithoutSpawns = _.filter(
             storages,
-            st =>
+            (st) =>
                 !(
                     st instanceof StructureSpawn ||
                     st instanceof StructureExtension

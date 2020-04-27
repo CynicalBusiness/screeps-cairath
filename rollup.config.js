@@ -5,7 +5,7 @@ import resolve from "rollup-plugin-node-resolve";
 import commonjs from "rollup-plugin-commonjs";
 import typescript from "rollup-plugin-typescript2";
 import screeps from "rollup-plugin-screeps";
-import ignore from "rollup-plugin-ignore";
+import { eslint } from "rollup-plugin-eslint";
 
 let cfg;
 const dest = process.env.DEST;
@@ -27,8 +27,8 @@ export default {
 
     plugins: [
         clear({ targets: ["dist"] }),
-        ignore(["lodash"]),
         resolve(),
+        eslint(),
         commonjs(),
         typescript({ tsconfig: "./tsconfig.json" }),
         screeps({ config: cfg, dryRun: cfg == null }),

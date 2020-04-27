@@ -1,4 +1,3 @@
-import { ErrorMapper } from "utils/ErrorMapper";
 import "./prototypes";
 
 import { Dictionary } from "lodash";
@@ -17,7 +16,7 @@ const prioritiesArray: CreepRole[] = [
     CreepRole.Upgrade,
     CreepRole.Collector,
     CreepRole.Build,
-    CreepRole.Repair
+    CreepRole.Repair,
 ];
 const priorities = _.fromPairs(prioritiesArray.map((w, i) => [w, i])) as Record<
     CreepRole,
@@ -26,7 +25,7 @@ const priorities = _.fromPairs(prioritiesArray.map((w, i) => [w, i])) as Record<
 
 // When compiling TS to JS and bundling with rollup, the line numbers and file names in error messages change
 // This utility uses source maps to get the line numbers and file names of the original, TS source code
-export const loop = ErrorMapper.wrapLoop(() => {
+export const loop = () => {
     // console.log(`Current game tick is ${Game.time}`);
 
     const currentRoleWantedPerRoom: Dictionary<Record<
@@ -39,17 +38,18 @@ export const loop = ErrorMapper.wrapLoop(() => {
     >> = {};
     const maxTierPerRoom: Dictionary<number> = {};
 
-    _.each(Game.spawns, spawn => {
+    _.each(Game.spawns, (spawn) => {
         if (!spawn.my) return;
         const { name: roomName } = spawn.room;
         maxTierPerRoom[roomName] = 0;
 
         if (!currentRoleWantedPerRoom[roomName]) {
             const counts = _.mapValues(priorities, () => [] as number[]);
-            _.each(prioritiesArray, role => {
+            _.each(prioritiesArray, (role) => {
                 counts[role] = _.map<CreepRoleWorker, number>(
                     CreepRoleWorkers[role],
-                    w => Math.max(Math.floor(w.getNeededCreeps(spawn.room)), 0)
+                    (w) =>
+                        Math.max(Math.floor(w.getNeededCreeps(spawn.room)), 0)
                 );
                 maxTierPerRoom[roomName] = Math.max(
                     maxTierPerRoom[roomName],
@@ -61,7 +61,7 @@ export const loop = ErrorMapper.wrapLoop(() => {
 
         if (!currentRoleCountsPerRoom[roomName]) {
             const counts = _.mapValues(priorities, () => [] as number[]);
-            _.each(prioritiesArray, role => {
+            _.each(prioritiesArray, (role) => {
                 counts[role] = _.map<CreepRoleWorker, number>(
                     CreepRoleWorkers[role],
                     () => 0
@@ -73,7 +73,7 @@ export const loop = ErrorMapper.wrapLoop(() => {
     });
 
     // issue work to creeps
-    _.each(Game.creeps, creep => {
+    _.each(Game.creeps, (creep) => {
         const { role } = creep.memory;
         if (role) {
             const worker = creep.getWorker();
@@ -97,7 +97,7 @@ export const loop = ErrorMapper.wrapLoop(() => {
     for (const [roomName, room] of _.toPairs(Game.rooms)) {
         room.dispatchAll();
         const towers = room.find(FIND_MY_STRUCTURES, {
-            filter: st => st instanceof StructureTower
+            filter: (st) => st instanceof StructureTower,
         }) as StructureTower[];
         if (towers.length) {
             _.each(towers, operateTower);
@@ -108,7 +108,7 @@ export const loop = ErrorMapper.wrapLoop(() => {
             const counts = currentRoleCountsPerRoom[roomName];
             const rolesPriority = _.sortBy(
                 Object.keys(priorities) as CreepRole[],
-                name => priorities[name]
+                (name) => priorities[name]
             );
 
             const spawns = room.find(FIND_MY_SPAWNS);
@@ -137,9 +137,9 @@ export const loop = ErrorMapper.wrapLoop(() => {
                                     console.log(
                                         `Spawned ${roomName}/${
                                             spawn.name
-                                        }: ${role}-${tier + 1} (${(counts[role][
-                                            tier
-                                        ] ?? 0) + 1}/${wanted[role][tier]})`
+                                        }: ${role}-${tier + 1} (${
+                                            (counts[role][tier] ?? 0) + 1
+                                        }/${wanted[role][tier]})`
                                     );
                                 }
                                 break forEachTier;
@@ -157,6 +157,6 @@ export const loop = ErrorMapper.wrapLoop(() => {
             delete Memory.creeps[name];
         }
     }
-});
+};
 
 console.log("Successfully updated scripts: ", new Date().toISOString());

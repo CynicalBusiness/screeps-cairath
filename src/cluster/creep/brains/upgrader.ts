@@ -26,11 +26,10 @@ export class UpgraderBrain extends CreepBrain<"Upgrader"> {
                         controller.owner?.username === creep.owner.username
                     ) {
                         switch (creep.upgradeController(controller)) {
-                            case OK:
-                                return task;
                             case ERR_NOT_IN_RANGE:
                                 creep.moveTo(controller);
                         }
+                        return task;
                     }
                     break;
                 } else {

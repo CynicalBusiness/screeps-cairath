@@ -85,23 +85,15 @@ export abstract class CreepBrain<
         // do tasks
         const { task } = creep;
         let newTask: CynCluster.Creep.RoleTaskOf<TRole> | undefined = undefined;
-        switch (task.type) {
-            case "Idle":
-                if (task.at)
-                    creep.moveTo(
-                        new RoomPosition(
-                            task.at.x,
-                            task.at.y,
-                            task.at.roomName
-                        ),
-                        {
-                            range: 1,
-                        }
-                    );
-                break;
-            default:
-                newTask = this.work(creep);
-        }
+        if (task.type === "Idle")
+            if (task.at)
+                creep.moveTo(
+                    new RoomPosition(task.at.x, task.at.y, task.at.roomName),
+                    {
+                        range: 1,
+                    }
+                );
+        newTask = this.work(creep);
 
         // TODO if creep is in need of recharge, etc. then re-assign newTask
 

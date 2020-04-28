@@ -17,6 +17,8 @@ declare global {
                 type NEED_ANY = NEED_RECHARGE | NEED_SUICIDE;
 
                 // work tasks
+                type WORK_BUILD = "Build";
+                type WORK_REPAIR = "Repair";
                 type WORK_HARVEST_SOURCE = "HarvestSource";
                 type WORK_HARVEST = WORK_HARVEST_SOURCE;
                 type WORK_PICKUP_POSITION = "PickupPosition";
@@ -30,6 +32,8 @@ declare global {
                 type WORK_UPGRADE_ROOM_CONTROLLER = "UpgradeRoomController";
                 type WORK_UPGRADE = WORK_UPGRADE_ROOM_CONTROLLER;
                 type WORK_ANY =
+                    | WORK_BUILD
+                    | WORK_REPAIR
                     | WORK_HARVEST
                     | WORK_PICKUP
                     | WORK_DROPOFF
@@ -45,6 +49,7 @@ declare global {
                 interface Generic<TType extends Type.ANY> {
                     type: TType;
                     priority: TaskPriority;
+                    allowMultipleWorkers?: boolean;
                 }
 
                 /** Task to go idle */
@@ -57,6 +62,22 @@ declare global {
                 interface Recharge extends Generic<Type.NEED_RECHARGE> {
                     /** Spawn to recharge at */
                     at: Id<StructureSpawn>;
+                }
+
+                /** Work on a construction site */
+                interface WorkBuild extends Generic<Type.WORK_BUILD> {
+                    /** The site to work on building */
+                    target: Id<ConstructionSite>;
+                }
+
+                /** Repair a structure */
+                interface WorkRepair extends Generic<Type.WORK_REPAIR> {
+                    /** The target in need of repair */
+                    target: Id<Structure>;
+                    /** If true, only repair the target once, then move to next task */
+                    once?: boolean;
+                    /** If provided, target will be repaired until `hits/maxHits` is greater */
+                    threshold?: number;
                 }
 
                 /** Harvest a source */
@@ -126,12 +147,16 @@ declare global {
                 }
 
                 type Needs = Recharge;
-                type Work =
-                    | HarvestSource
+                type WorkStorage =
                     | PickupPosition
                     | PickupStorage
                     | DropoffPosition
-                    | DropoffStorage
+                    | DropoffStorage;
+                type Work =
+                    | WorkBuild
+                    | WorkRepair
+                    | WorkStorage
+                    | HarvestSource
                     | UpgradeRoomController;
 
                 type Any = Idle | Needs | Work;
@@ -162,6 +187,10 @@ declare global {
                 Upgrader:
                     | Task.Object.UpgradeRoomController
                     | Task.Object.PickupStorage;
+                Builder:
+                    | Task.Object.WorkBuild
+                    | Task.Object.WorkRepair
+                    | Task.Object.PickupStorage;
             }
 
             type RoleTaskOf<TRole extends ROLE_ANY> =
@@ -172,7 +201,12 @@ declare global {
             type ROLE_HARVESTER = "Harvester";
             type ROLE_COURIER = "Courier";
             type ROLE_UPGRADER = "Upgrader";
-            type ROLE_ANY = ROLE_HARVESTER | ROLE_COURIER | ROLE_UPGRADER;
+            type ROLE_BUILDER = "Builder";
+            type ROLE_ANY =
+                | ROLE_HARVESTER
+                | ROLE_COURIER
+                | ROLE_UPGRADER
+                | ROLE_BUILDER;
         }
 
         namespace Memory {

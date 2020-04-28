@@ -16,6 +16,14 @@ declare global {
         /** Priorities for storages, where higher priorities are added to first and taken from last */
         storagePriorities: Partial<Record<StructureConstant, number>>;
 
+        /** Priorities for construction, where higher priorities are assigned first. Anything not in this list is assumed at {@link TaskPriority.NORMAL}. */
+        constructionPriorities: Partial<
+            Record<BuildableStructureConstant, number>
+        >;
+
+        /** Priorities for repair, where higher priorities are assigned first. Anything not in this list is assumed at {@link TaskPriority.NORMAL}. */
+        repairPriorities: Partial<Record<StructureConstant, number>>;
+
         /**
          * Finds a parking flag in a given room
          */
@@ -59,6 +67,18 @@ Object.defineProperties(Room.prototype, {
             [STRUCTURE_EXTENSION]: TaskPriority.HIGH,
             [STRUCTURE_CONTAINER]: TaskPriority.LOW,
             [STRUCTURE_STORAGE]: TaskPriority.LOWEST,
+        },
+    },
+    constructionPriorities: {
+        value: {
+            [STRUCTURE_WALL]: TaskPriority.HIGHEST,
+            [STRUCTURE_RAMPART]: TaskPriority.HIGHEST,
+            [STRUCTURE_ROAD]: TaskPriority.HIGH,
+        },
+    },
+    repairPriorities: {
+        value: {
+            [STRUCTURE_ROAD]: TaskPriority.LOW,
         },
     },
 });

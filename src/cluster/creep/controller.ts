@@ -1,6 +1,7 @@
 import _ from "lodash";
 import { CynClusterManager } from "../cluster";
 import { CreepBrain } from "./brain";
+import { BuilderBrain } from "./brains/builder";
 import { CourierBrain } from "./brains/courier";
 import { HarvesterBrain } from "./brains/harvester";
 import { UpgraderBrain } from "./brains/upgrader";
@@ -22,6 +23,7 @@ export class CynCreepController {
             Harvester: new HarvesterBrain(this),
             Courier: new CourierBrain(this),
             Upgrader: new UpgraderBrain(this),
+            Builder: new BuilderBrain(this),
         };
     }
 
@@ -31,9 +33,10 @@ export class CynCreepController {
     public getNeededCreeps(): Partial<CynCluster.Creep.RoleDictionary<number>> {
         // TODO sort this somehow
         return {
-            Harvester: 2,
-            Courier: 4,
+            Harvester: 3,
+            Courier: 5,
             Upgrader: 3,
+            Builder: 2,
         };
     }
 

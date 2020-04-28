@@ -4,6 +4,7 @@ import { CynGame } from "../game";
 import { GameLoopConsumer } from "../util/loop";
 import { CynCreepController } from "./creep/controller";
 import { TaskDelegator } from "./task/delegator";
+import { ConstructionTaskDelegator } from "./task/delegators/build";
 import { CarryTaskDelegator } from "./task/delegators/carry";
 import { SourceHarvestTaskDelegator } from "./task/delegators/harvest";
 import { RoomUpgradeTaskDelegator } from "./task/delegators/roomUpgrade";
@@ -62,6 +63,7 @@ export class CynClusterManager extends GameLoopConsumer {
             new SourceHarvestTaskDelegator(this),
             new CarryTaskDelegator(this),
             new RoomUpgradeTaskDelegator(this),
+            new ConstructionTaskDelegator(this),
         ];
     }
 

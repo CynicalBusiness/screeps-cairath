@@ -1,6 +1,14 @@
 import _ from "lodash";
 
 declare global {
+    interface RoomPositionConstructor {
+        /**
+         * Creates a new room position from a serialized room position value
+         * @param pos The serialized position
+         */
+        from(pos: SerializedRoomPosition): RoomPosition;
+    }
+
     interface RoomPosition {
         _neighbors?: RoomPosition[];
 
@@ -61,6 +69,10 @@ Object.defineProperties(RoomPosition.prototype, {
         },
     },
 });
+
+RoomPosition.from = function (pos: SerializedRoomPosition) {
+    return new RoomPosition(pos.x, pos.y, pos.roomName);
+};
 
 RoomPosition.prototype.inBounds = function (this: RoomPosition) {
     return (

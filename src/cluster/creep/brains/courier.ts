@@ -39,49 +39,12 @@ export class CourierBrain extends CreepBrain<"Courier"> {
     ): CynCluster.Creep.RoleTasks["Courier"] | undefined {
         const { task } = creep;
         switch (task.type) {
-            // TODO pickup/drop-off reservations
             case "PickupPosition":
-                if (creep.store.getFreeCapacity(task.resource) ?? 0 > 0) {
-                    const res = Game.getObjectById(task.from);
-                    if (res) {
-                        switch (creep.pickup(res)) {
-                            case ERR_NOT_IN_RANGE:
-                                creep.moveTo(res);
-                                return task;
-                        }
-                    }
-                }
-                break;
+            case "PickupStorage":
+            case "DropoffPosition":
             case "DropoffStorage":
-                if (creep.store.getUsedCapacity(task.resource) > 0) {
-                    const storage = task.to
-                        ? Game.getObjectById(task.to)
-                        : creep.room.findAppropriateStorage("dropoff", {
-                              resource: task.resource,
-                              amount: task.amount,
-                          });
-                    if (storage) {
-                        switch (
-                            creep.transfer(
-                                storage,
-                                task.resource,
-                                task.amount
-                                    ? Math.min(
-                                          task.amount,
-                                          creep.store.getUsedCapacity(
-                                              task.resource
-                                          ) ?? 0
-                                      )
-                                    : undefined
-                            )
-                        ) {
-                            case ERR_NOT_IN_RANGE:
-                                creep.moveTo(storage, { range: 1 });
-                                break;
-                        }
-                    } else return;
-                }
-            // TODO other two tasks
+                const r = this.workStorageTask(creep, task);
+                if (r !== null) return r;
         }
 
         if (creep.store.getUsedCapacity() ?? 0 > 0) {
@@ -93,7 +56,8 @@ export class CourierBrain extends CreepBrain<"Courier"> {
                     (res) => creep.store[res] > 0
                 ) as ResourceConstant,
             };
-        } else return undefined;
+        }
+        return;
     }
 
     public getBodyParts(size: number): BodyPartConstant[] {

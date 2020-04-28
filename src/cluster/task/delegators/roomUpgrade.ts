@@ -9,8 +9,12 @@ export class RoomUpgradeTaskDelegator extends TaskDelegator<
             this.cluster.rooms,
             (room): CynCluster.Task.Object.UpgradeRoomController => ({
                 type: "UpgradeRoomController",
+                allowMultipleWorkers: true,
                 room: room.name,
-                priority: TaskPriority.LOW,
+                priority:
+                    room.controller && room.controller.ticksToDowngrade < 10000
+                        ? TaskPriority.HIGH
+                        : TaskPriority.LOW,
             })
         );
     }

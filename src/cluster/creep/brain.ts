@@ -107,6 +107,94 @@ export abstract class CreepBrain<
     }
 
     /**
+     * Works a storage
+     * @param creep
+     * @param task
+     */
+    public workStorageTask<TTask extends CynCluster.Task.Object.WorkStorage>(
+        creep: CynCluster.Creep.ClusterCreep<TRole>,
+        task: TTask
+    ): TTask | null | undefined {
+        const t = task as CynCluster.Task.Object.WorkStorage;
+        switch (t.type) {
+            // TODO pickup/drop-off reservations
+            case "PickupPosition":
+                if (creep.store.getFreeCapacity(task.resource) ?? 0 > 0) {
+                    const res = Game.getObjectById(t.from);
+                    if (res) {
+                        switch (creep.pickup(res)) {
+                            case ERR_NOT_IN_RANGE:
+                                creep.moveTo(res);
+                                return task;
+                        }
+                    }
+                }
+                break;
+            case "PickupStorage":
+                if (creep.store.getFreeCapacity(task.resource) ?? 0 > 0) {
+                    const storage = t.from
+                        ? Game.getObjectById(t.from)
+                        : creep.room.findAppropriateStorage("pickup", {
+                              resource: task.resource,
+                              amount: task.amount,
+                          });
+                    if (storage) {
+                        switch (
+                            creep.withdraw(storage, task.resource, task.amount)
+                        ) {
+                            case ERR_NOT_IN_RANGE:
+                                creep.moveTo(storage);
+                                return task;
+                        }
+                    } else return;
+                }
+                break;
+            case "DropoffPosition":
+                if (creep.store.getUsedCapacity(task.resource) > 0) {
+                    const pos = RoomPosition.from(t.to);
+                    if (!creep.pos.isEqualTo(pos)) {
+                        creep.moveTo(pos);
+                        return task;
+                    } else {
+                        creep.drop(task.resource, task.amount);
+                        return;
+                    }
+                }
+                break;
+            case "DropoffStorage":
+                if (creep.store.getUsedCapacity(task.resource) > 0) {
+                    const storage = t.to
+                        ? Game.getObjectById(t.to)
+                        : creep.room.findAppropriateStorage("dropoff", {
+                              resource: task.resource,
+                              amount: task.amount,
+                          });
+                    if (storage) {
+                        switch (
+                            creep.transfer(
+                                storage,
+                                task.resource,
+                                task.amount
+                                    ? Math.min(
+                                          task.amount,
+                                          creep.store.getUsedCapacity(
+                                              task.resource
+                                          ) ?? 0
+                                      )
+                                    : undefined
+                            )
+                        ) {
+                            case ERR_NOT_IN_RANGE:
+                                creep.moveTo(storage, { range: 1 });
+                                break;
+                        }
+                    } else return;
+                }
+        }
+        return null;
+    }
+
+    /**
      * Checks if a given creep is in need of recharge
      * @param creep The creep to check
      */
@@ -127,7 +215,10 @@ export abstract class CreepBrain<
             i++
         ) {
             if (this.canCreepTakeTask(task, creep)) {
-                return this.#pendingTasks.splice(i, 1)[0];
+                // if multiple workers are allowed, leave the task in queue
+                return task.allowMultipleWorkers
+                    ? task
+                    : this.#pendingTasks.splice(i, 1)[0];
             }
         }
         return;

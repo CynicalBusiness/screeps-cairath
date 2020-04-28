@@ -8,6 +8,7 @@ export class ConstructionTaskDelegator extends TaskDelegator<
         return [
             ..._.chain(this.cluster.rooms)
                 .flatMap((room) => room.find(FIND_MY_CONSTRUCTION_SITES))
+                .sortBy((site) => site.id)
                 .sortBy((site) => site.progressTotal)
                 .map(
                     (site): CynCluster.Task.Object.WorkBuild => ({
@@ -23,6 +24,7 @@ export class ConstructionTaskDelegator extends TaskDelegator<
                 .value(),
             ..._.chain(this.cluster.rooms)
                 .flatMap((room) => room.find(FIND_MY_STRUCTURES))
+                .filter((s) => s.hits < s.hitsMax)
                 .sortBy((s) => s.hits)
                 .map(
                     (s): CynCluster.Task.Object.WorkRepair => ({

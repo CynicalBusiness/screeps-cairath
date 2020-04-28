@@ -35,8 +35,13 @@ export class BuilderBrain extends CreepBrain<"Builder"> {
                 const s = Game.getObjectById(task.target);
                 if (s) {
                     if (s.hits >= s.hitsMax) return;
-                    switch (creep.repair(s)) {
+                    const r = creep.repair(s);
+                    switch (r) {
+                        case OK:
+                            if (task.once) return;
+                            break;
                         case ERR_NOT_ENOUGH_ENERGY:
+                        case ERR_INVALID_TARGET:
                             break outer;
                         case ERR_NOT_IN_RANGE:
                             creep.moveTo(s);

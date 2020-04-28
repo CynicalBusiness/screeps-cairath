@@ -66,5 +66,13 @@
         ],
         "no-case-declarations": "off",
         "no-undef": "off"
-    }
+    },
+    "overrides": [
+        {
+            "files": ["**/types.ts"],
+            "rules": {
+                "@typescript-eslint/no-unused-vars": "off"
+            }
+        }
+    ]
 }

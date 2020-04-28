@@ -54,20 +54,12 @@ export class CourierBrain extends CreepBrain<"Courier"> {
                 break;
             case "DropoffStorage":
                 if (creep.store.getUsedCapacity(task.resource) > 0) {
-                    let storage = task.to
+                    const storage = task.to
                         ? Game.getObjectById(task.to)
-                        : undefined;
-                    if (!storage) {
-                        // TODO find appropriate storage
-                        if (task.resource === RESOURCE_ENERGY)
-                            storage = creep.room.find(
-                                FIND_MY_SPAWNS
-                            )[0] as StructureWithStorage<
-                                ResourceConstant,
-                                false
-                            >;
-                    }
-
+                        : creep.room.findAppropriateStorage("dropoff", {
+                              resource: task.resource,
+                              amount: task.amount,
+                          });
                     if (storage) {
                         switch (
                             creep.transfer(
@@ -87,10 +79,7 @@ export class CourierBrain extends CreepBrain<"Courier"> {
                                 creep.moveTo(storage, { range: 1 });
                                 break;
                         }
-                    } else {
-                        // if we still can't find a storage...
-                        creep.drop(task.resource);
-                    }
+                    } else return;
                 }
             // TODO other two tasks
         }

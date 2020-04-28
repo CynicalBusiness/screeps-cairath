@@ -41,15 +41,11 @@ export class UpgraderBrain extends CreepBrain<"Upgrader"> {
                 }
             case "PickupStorage":
                 if (creep.store.getFreeCapacity(RESOURCE_ENERGY) > 0) {
-                    let storage = task.from
+                    const storage = task.from
                         ? Game.getObjectById(task.from)
-                        : undefined;
-                    if (!storage) {
-                        // TODO find appropriate storage
-                        storage = creep.room.find(
-                            FIND_MY_SPAWNS
-                        )[0] as StructureWithStorage<ResourceConstant, false>;
-                    }
+                        : creep.room.findAppropriateStorage("pickup", {
+                              resource: RESOURCE_ENERGY,
+                          });
 
                     // go get it
                     if (storage) {

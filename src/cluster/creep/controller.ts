@@ -31,9 +31,9 @@ export class CynCreepController {
     public getNeededCreeps(): Partial<CynCluster.Creep.RoleDictionary<number>> {
         // TODO sort this somehow
         return {
-            Harvester: 1,
-            Courier: 2,
-            Upgrader: 1,
+            Harvester: 2,
+            Courier: 4,
+            Upgrader: 3,
         };
     }
 

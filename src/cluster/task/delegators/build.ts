@@ -23,7 +23,12 @@ export class ConstructionTaskDelegator extends TaskDelegator<
                 )
                 .value(),
             ..._.chain(this.cluster.rooms)
-                .flatMap((room) => room.find(FIND_MY_STRUCTURES))
+                .flatMap((room) => room.find(FIND_STRUCTURES))
+                .filter(
+                    (s) =>
+                        s.structureType === STRUCTURE_CONTAINER ||
+                        !!(s as OwnedStructure).my
+                )
                 .filter((s) => s.hits < s.hitsMax)
                 .sortBy((s) => s.hits)
                 .map(

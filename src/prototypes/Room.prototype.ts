@@ -8,6 +8,7 @@ declare global {
     > {
         resource: TResource;
         amount: number;
+        proximity?: RoomPosition;
     }
 
     interface Room {
@@ -68,6 +69,7 @@ Object.defineProperties(Room.prototype, {
     storagePriorities: {
         value: {
             [STRUCTURE_SPAWN]: TaskPriority.HIGHEST,
+            [STRUCTURE_TOWER]: TaskPriority.HIGH,
             [STRUCTURE_EXTENSION]: TaskPriority.HIGH,
             [STRUCTURE_CONTAINER]: TaskPriority.LOW,
             [STRUCTURE_STORAGE]: TaskPriority.LOWEST,
@@ -108,11 +110,15 @@ Room.prototype.findAppropriateStorages = function <
 >(
     this: Room,
     intention: "dropoff" | "pickup",
-    { resource, amount }: Partial<AppropriateStorageOptions<TResource>> = {}
+    {
+        resource,
+        amount,
+        proximity,
+    }: Partial<AppropriateStorageOptions<TResource>> = {}
 ): StructureWithStorage<TResource>[] {
     // TODO respect reservations
 
-    const chain = _.chain(this.findStorages(resource))
+    let chain = _.chain(this.findStorages(resource))
         .filter(
             (s) =>
                 // ignore mining containers
@@ -125,10 +131,15 @@ Room.prototype.findAppropriateStorages = function <
                 case "dropoff":
                     return s.store.getFreeCapacity(resource) >= amount;
                 case "pickup":
-                    return s.store.getUsedCapacity(resource) >= amount;
+                    return (
+                        s.structureType !== STRUCTURE_TOWER &&
+                        s.store.getUsedCapacity(resource) >= amount
+                    );
             }
         })
         .sortBy((s) => this.storagePriorities[s.structureType] ?? -1);
+
+    if (proximity) chain = chain.sortBy((s) => s.pos.getRangeTo(proximity));
 
     return intention === "dropoff" ? chain.reverse().value() : chain.value();
 };

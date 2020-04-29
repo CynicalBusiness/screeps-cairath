@@ -6,6 +6,14 @@ declare global {
     interface Creep {
         cluster?: CynClusterManager;
         isManaged(this: Creep): this is CynCluster.Creep.ClusterCreep;
+
+        /**
+         * Tells a creep to move to a spot, but ignore couriers when moving
+         * @param args
+         */
+        moveToIgnoringCouriers(
+            ...args: Parameters<Creep["moveTo"]>
+        ): ScreepsReturnCode;
     }
 }
 

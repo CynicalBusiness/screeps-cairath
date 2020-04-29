@@ -148,7 +148,9 @@ export abstract class CreepBrain<
                             case ERR_NOT_ENOUGH_RESOURCES:
                                 return;
                             case ERR_NOT_IN_RANGE:
-                                creep.moveTo(storage, { reusePath: 2 });
+                                creep.moveTo(storage, {
+                                    reusePath: 2,
+                                });
                                 return task;
                         }
                     } else return;
@@ -190,7 +192,9 @@ export abstract class CreepBrain<
                             )
                         ) {
                             case ERR_NOT_IN_RANGE:
-                                creep.moveTo(storage, { range: 1 });
+                                creep.moveTo(storage, {
+                                    range: 1,
+                                });
                                 break;
                         }
                     } else return;

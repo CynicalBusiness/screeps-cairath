@@ -266,7 +266,7 @@ export class CynClusterManager extends GameLoopConsumer {
             const needed = neededPerRole[role] ?? 0;
             let has = this.getNumCreepsOfRole(role, true);
 
-            const size = 1; // TODO size tier
+            const size = role === "Courier" || role === "Builder" ? 2 : 1; // TODO size tier
             let spawn: StructureSpawn | undefined;
             while (
                 needed > has++ &&
@@ -319,8 +319,7 @@ export class CynClusterManager extends GameLoopConsumer {
 
         const roadNeedingRepair = _.sortBy(
             room.find(FIND_STRUCTURES, {
-                filter: (st) =>
-                    st instanceof StructureRoad && st.hits < st.hitsMax,
+                filter: (st) => st.hits < st.hitsMax,
             }) as StructureRoad[],
             (st) => st.hits
         )[0];

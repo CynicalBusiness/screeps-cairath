@@ -29,6 +29,10 @@ declare global {
          */
         findParkingFlag(): Flag | undefined;
 
+        findStorages<TResource extends ResourceConstant>(
+            resource?: TResource
+        ): StructureWithStorage<TResource>[];
+
         /**
          * Gets an array appropriate storages for pickup for drop-off, optionally filtered by only structures which can
          * take the given resource. If an amount is provided, only structures with enough free space or available
@@ -39,7 +43,7 @@ declare global {
         findAppropriateStorages<TResource extends ResourceConstant>(
             intention: "dropoff" | "pickup",
             options?: Partial<AppropriateStorageOptions<TResource>>
-        ): OwnedStructureWithStorage<TResource>[];
+        ): StructureWithStorage<TResource>[];
 
         /**
          * Finds an appropriate storage for pickup for drop-off, optionally filtered by only structures which can take
@@ -51,7 +55,7 @@ declare global {
         findAppropriateStorage<TResource extends ResourceConstant>(
             intention: "dropoff" | "pickup",
             options?: Partial<AppropriateStorageOptions<TResource>>
-        ): OwnedStructureWithStorage<TResource> | undefined;
+        ): StructureWithStorage<TResource> | undefined;
     }
 }
 
@@ -90,19 +94,30 @@ Room.prototype.findParkingFlag = function (this: Room): Flag | undefined {
         .value();
 };
 
+Room.prototype.findStorages = function <TResource extends ResourceConstant>(
+    this: Room,
+    resource?: TResource
+): StructureWithStorage<TResource>[] {
+    return (_.filter(this.find(FIND_STRUCTURES), (s) =>
+        s.hasStorage(resource)
+    ) as any) as StructureWithStorage<TResource>[];
+};
+
 Room.prototype.findAppropriateStorages = function <
     TResource extends ResourceConstant
 >(
     this: Room,
     intention: "dropoff" | "pickup",
     { resource, amount }: Partial<AppropriateStorageOptions<TResource>> = {}
-): OwnedStructureWithStorage<TResource>[] {
+): StructureWithStorage<TResource>[] {
     // TODO respect reservations
-    // TODO ignore mining containers
 
-    return _.chain(this.find(FIND_MY_STRUCTURES))
-        .filter((s): s is OwnedStructureWithStorage<TResource> =>
-            s.hasStorage(resource)
+    const chain = _.chain(this.findStorages(resource))
+        .filter(
+            (s) =>
+                // ignore mining containers
+                s.structureType !== STRUCTURE_CONTAINER ||
+                !((s as any) as StructureContainer).isMiningContainer
         )
         .filter((s) => {
             if (typeof amount !== "number" || amount <= 0) amount = 1;
@@ -113,8 +128,9 @@ Room.prototype.findAppropriateStorages = function <
                     return s.store.getUsedCapacity(resource) >= amount;
             }
         })
-        .sortBy((s) => this.storagePriorities[s.structureType] ?? -1)
-        .value();
+        .sortBy((s) => this.storagePriorities[s.structureType] ?? -1);
+
+    return intention === "dropoff" ? chain.reverse().value() : chain.value();
 };
 
 Room.prototype.findAppropriateStorage = function <
@@ -122,6 +138,6 @@ Room.prototype.findAppropriateStorage = function <
 >(
     intention: "dropoff" | "pickup",
     options?: Partial<AppropriateStorageOptions<TResource>>
-): OwnedStructureWithStorage<TResource> | undefined {
+): StructureWithStorage<TResource> | undefined {
     return this.findAppropriateStorages(intention, options)[0];
 };

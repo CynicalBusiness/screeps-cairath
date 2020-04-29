@@ -1,3 +1,4 @@
+import _ from "lodash";
 import { CreepBrain } from "../brain";
 import { CynCreepController } from "../controller";
 
@@ -34,8 +35,25 @@ export class HarvesterBrain extends CreepBrain<"Harvester"> {
                         creep.store.getFreeCapacity(RESOURCE_ENERGY) <
                         amountMined
                     ) {
-                        // TODO look for container
-                        creep.drop(RESOURCE_ENERGY);
+                        // TODO cache container search
+                        const container = _.chain(
+                            creep.room.find(FIND_STRUCTURES)
+                        )
+                            .filter(
+                                (s): s is StructureContainer =>
+                                    s.structureType === STRUCTURE_CONTAINER
+                            )
+                            .find(
+                                (s) =>
+                                    s.isMiningContainer &&
+                                    /* s.store.getFreeCapacity(RESOURCE_ENERGY) >
+                                        0 && */
+                                    s.pos.inRangeTo(creep.pos, 1)
+                            )
+                            .value();
+                        if (container) {
+                            creep.transfer(container, RESOURCE_ENERGY);
+                        } else creep.drop(RESOURCE_ENERGY);
                     } else if (creep.pos.toString() !== task.fromStr) {
                         creep.moveTo(from);
                     } else {

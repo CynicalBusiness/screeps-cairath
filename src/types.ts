@@ -74,6 +74,11 @@ declare global {
         store: Store<TResource, TUnlimited>;
     }
 
+    type ResourceOrStructureWithStorage<TResource extends ResourceConstant> = {
+        id: Id<Resource<TResource> | StructureWithStorage<TResource>>;
+        store: Store<TResource, false>;
+    };
+
     type OwnedStructureWithStorage<
         TResource extends ResourceConstant,
         TUnlimited extends boolean = false

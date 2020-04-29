@@ -138,12 +138,17 @@ export abstract class CreepBrain<
                               resource: task.resource,
                               amount: task.amount,
                           });
-                    if (storage) {
+                    if (
+                        storage &&
+                        storage.store.getUsedCapacity(task.resource) > 0
+                    ) {
                         switch (
                             creep.withdraw(storage, task.resource, task.amount)
                         ) {
+                            case ERR_NOT_ENOUGH_RESOURCES:
+                                return;
                             case ERR_NOT_IN_RANGE:
-                                creep.moveTo(storage);
+                                creep.moveTo(storage, { reusePath: 2 });
                                 return task;
                         }
                     } else return;

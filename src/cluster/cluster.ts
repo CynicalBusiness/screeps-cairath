@@ -75,6 +75,7 @@ export class CynClusterManager extends GameLoopConsumer {
             creeps: {},
             creepsSpawning: {},
             sources: {},
+            storageReservations: {},
         });
     }
 
@@ -236,6 +237,15 @@ export class CynClusterManager extends GameLoopConsumer {
     }
 
     public onLoop(): void {
+        // temp stuff
+        _.chain(this.rooms)
+            .flatMap((room) => room.find(FIND_MY_STRUCTURES))
+            .filter(
+                (s): s is StructureTower => s.structureType === STRUCTURE_TOWER
+            )
+            .each((tower) => this.tempOperateTower(tower))
+            .value();
+
         // spawn creeps to correct amount
         // TODO use all spawns
         /* Fuck you too, lodash
@@ -271,6 +281,7 @@ export class CynClusterManager extends GameLoopConsumer {
             .sortBy("priority")
             .reverse()
             .value();
+        this.memory.pendingTasks = this.pendingTasks;
         this.creepController.updatePendingTasks();
 
         // make creeps do their things
@@ -278,5 +289,44 @@ export class CynClusterManager extends GameLoopConsumer {
 
         // finally, clean up
         this.cleanupMemory();
+    }
+
+    /** Temporary tower control just so we don't die */
+    private tempOperateTower(tower: StructureTower): void {
+        const { room } = tower;
+
+        const hostile =
+            tower.pos.findClosestByRange(FIND_HOSTILE_CREEPS) ??
+            tower.pos.findClosestByRange(FIND_HOSTILE_POWER_CREEPS);
+        if (hostile) {
+            tower.attack(hostile);
+            return;
+        }
+
+        const missingHitsFilter = {
+            filter: (v: AnyCreep | AnyStructure) => v.hits < v.hitsMax,
+        };
+        const wounded =
+            tower.pos.findClosestByRange(FIND_MY_CREEPS, missingHitsFilter) ??
+            tower.pos.findClosestByRange(
+                FIND_MY_POWER_CREEPS,
+                missingHitsFilter
+            );
+        if (wounded) {
+            tower.heal(wounded);
+            return;
+        }
+
+        const roadNeedingRepair = _.sortBy(
+            room.find(FIND_STRUCTURES, {
+                filter: (st) =>
+                    st instanceof StructureRoad && st.hits < st.hitsMax,
+            }) as StructureRoad[],
+            (st) => st.hits
+        )[0];
+        if (roadNeedingRepair) {
+            tower.repair(roadNeedingRepair);
+            return;
+        }
     }
 }

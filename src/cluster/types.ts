@@ -215,6 +215,8 @@ declare global {
                 creeps: _.Dictionary<ClusterCreep>;
                 creepsSpawning: _.Dictionary<ClusterSpawningCreep>;
                 sources: _.Dictionary<ClusterSource>;
+                storageReservations: _.Dictionary<ClusterStorageReservation[]>;
+                pendingTasks?: Task.Object.Any[];
             }
 
             /** Memory of a creep within a cluster */
@@ -255,6 +257,16 @@ declare global {
                 offsetX: number;
                 offsetY: number;
                 miner?: Id<Creep>;
+            }
+
+            /** A reservation to add or remove goods from storage */
+            interface ClusterStorageReservation {
+                /** Creep that has this reservation */
+                creep: Id<Creep.ClusterCreep>;
+                /** Resource type that is reserved */
+                resource: ResourceConstant;
+                /** The amount of resource to transfer to (or take away, if negative) */
+                amount: number;
             }
         }
     }

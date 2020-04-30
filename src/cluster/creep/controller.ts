@@ -34,7 +34,7 @@ export class CynCreepController {
         // TODO sort this somehow
         return {
             Harvester: 6,
-            Courier: 4,
+            Courier: 6,
             Upgrader: 3,
             Builder: 2,
         };

@@ -14,6 +14,7 @@ export class CourierBrain extends CreepBrain<"Courier"> {
         return (
             task.type === "PickupPosition" ||
             task.type === "PickupStorage" ||
+            task.type === "PickupRuin" ||
             task.type === "DropoffPosition" ||
             task.type === "DropoffStorage"
         );
@@ -26,6 +27,7 @@ export class CourierBrain extends CreepBrain<"Courier"> {
         switch (task.type) {
             case "PickupPosition":
             case "PickupStorage":
+            case "PickupRuin":
                 return creep.store.getFreeCapacity(task.resource) > 0;
             case "DropoffPosition":
             case "DropoffStorage":
@@ -41,6 +43,7 @@ export class CourierBrain extends CreepBrain<"Courier"> {
         switch (task.type) {
             case "PickupPosition":
             case "PickupStorage":
+            case "PickupRuin":
             case "DropoffPosition":
             case "DropoffStorage":
                 const r = this.workStorageTask(creep, task);

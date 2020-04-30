@@ -11,6 +11,10 @@ import { RoomUpgradeTaskDelegator } from "./task/delegators/roomUpgrade";
 
 export const CLUSTER_NAME_PREFIX = "Cluster";
 
+export type RoomFindCache<TFind extends FindConstant> = {
+    [K in TFind]: FindTypes[K][] | undefined;
+};
+
 /**
  * Clusters represent control of a group of creeps/structures in a few related rooms
  */
@@ -45,6 +49,7 @@ export class CynClusterManager extends GameLoopConsumer {
         sourceWorkSpots: [RoomPosition, Source][];
         roomNames: string[];
         rooms: Room[];
+        finds: _.Dictionary<RoomFindCache<FindConstant>>;
     }> = {};
 
     public constructor(
@@ -108,6 +113,57 @@ export class CynClusterManager extends GameLoopConsumer {
      */
     public get spawns(): StructureSpawn[] {
         return _.flatMap(this.rooms, (room) => room.find(FIND_MY_SPAWNS));
+    }
+
+    /**
+     * Finds a given find constant in all rooms in this cluster, caching it, and returning it as a dictionary of the
+     * room in which the objects were found
+     * @param find The find constant to search for
+     */
+    public find<TFind extends FindConstant>(
+        find: TFind
+    ): _.Dictionary<FindTypes[TFind][]> {
+        return _.chain(this.roomNames)
+            .map((name): [string, FindTypes[TFind][]] => [
+                name,
+                this.findIn(name, find, true),
+            ])
+            .keyBy(([name]) => name)
+            .mapValues(([, finds]) => finds)
+            .value();
+    }
+
+    /**
+     * Finds a given find constant in all rooms in this cluster, caching it, and returning the array of all objects
+     * founds without the room name
+     * @param find The find constant to search for
+     */
+    public findAll<TFind extends FindConstant>(
+        find: TFind
+    ): FindTypes[TFind][] {
+        return _.flatMap(this.roomNames, (name) =>
+            this.findIn(name, find, true)
+        );
+    }
+
+    /**
+     * Runs a {@link Room#find} on a given room, and caches it. If the room does not belong to this cluster, an empty
+     * array is always returned
+     * @param roomName The room name
+     * @param find The find constant to search for
+     */
+    public findIn<TFind extends FindConstant>(
+        roomName: string,
+        find: TFind,
+        _skipRoomCheck?: boolean
+    ): FindTypes[TFind][] {
+        if (!_skipRoomCheck && !this.roomNames.includes(roomName)) return [];
+
+        this.#cache.finds = this.#cache.finds ?? {};
+        const roomFinds: RoomFindCache<TFind> = (this.#cache.finds[roomName] =
+            this.#cache.finds[roomName] ?? {});
+        return (roomFinds[find] =
+            roomFinds[find] ?? Game.rooms[roomName].find(find));
     }
 
     /**
@@ -238,8 +294,7 @@ export class CynClusterManager extends GameLoopConsumer {
 
     public onLoop(): void {
         // temp stuff
-        _.chain(this.rooms)
-            .flatMap((room) => room.find(FIND_MY_STRUCTURES))
+        _.chain(this.findAll(FIND_MY_STRUCTURES))
             .filter(
                 (s): s is StructureTower => s.structureType === STRUCTURE_TOWER
             )
@@ -247,18 +302,6 @@ export class CynClusterManager extends GameLoopConsumer {
             .value();
 
         // spawn creeps to correct amount
-        // TODO use all spawns
-        /* Fuck you too, lodash
-        const needed = _.chain(this.creepController.getNeededCreeps())
-            .toPairs()
-            .map(([role, num]: [CynCluster.Creep.ROLE_ANY, number]): [
-                number,
-                CynCluster.Creep.ROLE_ANY
-            ] => [num - this.getCreepsOfRole(role).length, role])
-            .filter(([num]) => num !== 0)
-            .value();
-        */
-        // try something else to spawn creeps
         const neededPerRole = this.creepController.getNeededCreeps();
         for (const role of _.keys(
             neededPerRole

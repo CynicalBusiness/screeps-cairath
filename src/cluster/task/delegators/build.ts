@@ -6,8 +6,7 @@ export class ConstructionTaskDelegator extends TaskDelegator<
 > {
     public findWork(): CynCluster.Creep.RoleTasks["Builder"][] {
         return [
-            ..._.chain(this.cluster.rooms)
-                .flatMap((room) => room.find(FIND_MY_CONSTRUCTION_SITES))
+            ..._.chain(this.cluster.findAll(FIND_MY_CONSTRUCTION_SITES))
                 .reverse()
                 .sortBy((site) => site.progressTotal)
                 .map(
@@ -22,8 +21,7 @@ export class ConstructionTaskDelegator extends TaskDelegator<
                     })
                 )
                 .value(),
-            ..._.chain(this.cluster.rooms)
-                .flatMap((room) => room.find(FIND_STRUCTURES))
+            ..._.chain(this.cluster.findAll(FIND_STRUCTURES))
                 .filter(
                     (s) =>
                         s.structureType === STRUCTURE_CONTAINER ||

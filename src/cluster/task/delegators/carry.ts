@@ -6,19 +6,29 @@ export class CarryTaskDelegator extends TaskDelegator<
 > {
     public findWork(): CynCluster.Creep.RoleTasks["Courier"][] {
         return [
-            ..._.chain(this.cluster.rooms)
-                .flatMap((room) => room.find(FIND_DROPPED_RESOURCES))
+            ..._.chain(this.cluster.findAll(FIND_DROPPED_RESOURCES))
                 .map(
                     (res): CynCluster.Task.Object.PickupPosition => ({
                         type: "PickupPosition",
-                        priority: TaskPriority.HIGH,
+                        priority: TaskPriority.HIGHEST,
                         from: res.id,
                         resource: res.resourceType,
                     })
                 )
                 .value(),
-            ..._.chain(this.cluster.rooms)
-                .flatMap((room) => room.find(FIND_STRUCTURES))
+            ..._.chain([
+                ...this.cluster.findAll(FIND_TOMBSTONES),
+                ...this.cluster.findAll(FIND_RUINS),
+            ])
+                .map(
+                    (tb): CynCluster.Task.Object.PickupRuin => ({
+                        type: "PickupRuin",
+                        priority: TaskPriority.HIGHEST,
+                        from: tb.id,
+                    })
+                )
+                .value(),
+            ..._.chain(this.cluster.findAll(FIND_STRUCTURES))
                 .filter(
                     (s): s is StructureContainer =>
                         s.structureType === STRUCTURE_CONTAINER &&

@@ -36,21 +36,13 @@ export class HarvesterBrain extends CreepBrain<"Harvester"> {
                         amountMined
                     ) {
                         // TODO cache container search
-                        const container = _.chain(
-                            creep.room.find(FIND_STRUCTURES)
-                        )
-                            .filter(
-                                (s): s is StructureContainer =>
-                                    s.structureType === STRUCTURE_CONTAINER
-                            )
-                            .find(
-                                (s) =>
-                                    s.isMiningContainer &&
-                                    /* s.store.getFreeCapacity(RESOURCE_ENERGY) >
-                                        0 && */
-                                    s.pos.inRangeTo(creep.pos, 1)
-                            )
-                            .value();
+                        const container = _.first(
+                            creep.pos.findInRange(FIND_STRUCTURES, 1, {
+                                filter: (st: Structure) =>
+                                    st instanceof StructureContainer &&
+                                    st.isMiningContainer,
+                            })
+                        );
                         if (container) {
                             creep.transfer(container, RESOURCE_ENERGY);
                         } else creep.drop(RESOURCE_ENERGY);

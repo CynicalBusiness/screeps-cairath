@@ -23,7 +23,11 @@ declare global {
                 type WORK_HARVEST = WORK_HARVEST_SOURCE;
                 type WORK_PICKUP_POSITION = "PickupPosition";
                 type WORK_PICKUP_STORAGE = "PickupStorage";
-                type WORK_PICKUP = WORK_PICKUP_POSITION | WORK_PICKUP_STORAGE;
+                type WORK_PICKUP_RUIN = "PickupRuin";
+                type WORK_PICKUP =
+                    | WORK_PICKUP_POSITION
+                    | WORK_PICKUP_STORAGE
+                    | WORK_PICKUP_RUIN;
                 type WORK_DROPOFF_POSITION = "DropoffPosition";
                 type WORK_DROPOFF_STORAGE = "DropoffStorage";
                 type WORK_DROPOFF =
@@ -62,6 +66,8 @@ declare global {
                 interface Recharge extends Generic<Type.NEED_RECHARGE> {
                     /** Spawn to recharge at */
                     at: Id<StructureSpawn>;
+                    /** A task that was paused for this recharge to happen, if any */
+                    pausedTask?: Object.Any;
                 }
 
                 /** Work on a construction site */
@@ -100,6 +106,14 @@ declare global {
                     /** Resource to pick up */
                     resource: TResource;
                     /** Amount to pick up,  */
+                    amount?: number;
+                }
+
+                interface PickupRuin<
+                    TResource extends ResourceConstant = ResourceConstant
+                > extends Generic<Type.WORK_PICKUP_RUIN> {
+                    from: Id<Ruin | Tombstone>;
+                    resource?: TResource;
                     amount?: number;
                 }
 
@@ -150,6 +164,7 @@ declare global {
                 type WorkStorage =
                     | PickupPosition
                     | PickupStorage
+                    | PickupRuin
                     | DropoffPosition
                     | DropoffStorage;
                 type Work =
@@ -182,6 +197,7 @@ declare global {
                 Courier:
                     | Task.Object.PickupPosition
                     | Task.Object.PickupStorage
+                    | Task.Object.PickupRuin
                     | Task.Object.DropoffPosition
                     | Task.Object.DropoffStorage;
                 Upgrader:

@@ -30,6 +30,15 @@ export abstract class CreepBrain<
         };
     }
 
+    public static getUsedResourceInStore<TResource extends ResourceConstant>(
+        store: Store<TResource, boolean>
+    ): TResource {
+        return _.find(
+            Object.keys(store) as ResourceConstant[],
+            (rc) => store.getUsedCapacity(rc) !== null
+        ) as TResource;
+    }
+
     public readonly controller: CynCreepController;
     public readonly role: TRole;
 
@@ -143,12 +152,31 @@ export abstract class CreepBrain<
                         storage.store.getUsedCapacity(task.resource) > 0
                     ) {
                         switch (
-                            creep.withdraw(storage, task.resource, task.amount)
+                            creep.withdraw(storage, t.resource, task.amount)
                         ) {
                             case ERR_NOT_ENOUGH_RESOURCES:
                                 return;
                             case ERR_NOT_IN_RANGE:
                                 creep.moveTo(storage, {
+                                    reusePath: 2,
+                                });
+                                return task;
+                        }
+                    } else return;
+                }
+                break;
+            case "PickupRuin":
+                if (creep.store.getFreeCapacity(t.resource) ?? 0 > 0) {
+                    const ruin = Game.getObjectById(t.from);
+                    if (ruin && ruin.store.getUsedCapacity(t.resource)) {
+                        const resource =
+                            t.resource ??
+                            CreepBrain.getUsedResourceInStore(ruin.store);
+                        switch (creep.withdraw(ruin, resource, task.amount)) {
+                            case ERR_NOT_ENOUGH_RESOURCES:
+                                return;
+                            case ERR_NOT_IN_RANGE:
+                                creep.moveTo(ruin, {
                                     reusePath: 2,
                                 });
                                 return task;
@@ -163,7 +191,7 @@ export abstract class CreepBrain<
                         creep.moveTo(pos);
                         return task;
                     } else {
-                        creep.drop(task.resource, task.amount);
+                        creep.drop(t.resource, task.amount);
                         return;
                     }
                 }
@@ -180,7 +208,7 @@ export abstract class CreepBrain<
                         switch (
                             creep.transfer(
                                 storage,
-                                task.resource,
+                                t.resource,
                                 task.amount
                                     ? Math.min(
                                           task.amount,

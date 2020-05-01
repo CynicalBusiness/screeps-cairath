@@ -332,6 +332,7 @@ export class CynClusterManager extends GameLoopConsumer {
 
         // finally, clean up
         this.cleanupMemory();
+        delete this.#cache.finds;
     }
 
     /** Temporary tower control just so we don't die */

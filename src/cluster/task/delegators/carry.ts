@@ -20,6 +20,7 @@ export class CarryTaskDelegator extends TaskDelegator<
                 ...this.cluster.findAll(FIND_TOMBSTONES),
                 ...this.cluster.findAll(FIND_RUINS),
             ])
+                .filter((tb) => tb.store.getUsedCapacity() > 0)
                 .map(
                     (tb): CynCluster.Task.Object.PickupRuin => ({
                         type: "PickupRuin",

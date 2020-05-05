@@ -1,4 +1,5 @@
-import { CynGame } from "./game";
+console.log("Hello world!");
 
-global.GameCore = CynGame.load();
-export const loop = GameCore.loop;
+export function loop(): void {
+    // TODO
+}

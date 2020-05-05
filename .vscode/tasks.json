@@ -2,9 +2,9 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "push-main",
+            "label": "push-master",
             "type": "shell",
-            "command": "yarn push-main",
+            "command": "yarn push-master",
             "problemMatcher": [],
             "group": {
                 "isDefault": true,

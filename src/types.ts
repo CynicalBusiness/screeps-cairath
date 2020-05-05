@@ -1,4 +1,5 @@
 import { Dictionary } from "lodash";
+import { StorageManager } from "./cluster/structure/storage";
 import { CreepRoleType, RoomTaskType } from "./const";
 import { CreepRole } from "./creep/role";
 import { CynGame } from "./game";
@@ -13,6 +14,7 @@ declare global {
     const GameCore: CynGame;
 
     interface Memory {
+        _cache: _.Dictionary<any>;
         time: number;
     }
 
@@ -83,4 +85,16 @@ declare global {
         TResource extends ResourceConstant,
         TUnlimited extends boolean = false
     > = StructureWithStorage<TResource, TUnlimited> & AnyOwnedStructure;
+
+    export type RoomObjectWithStorage<
+        TResource extends ResourceConstant,
+        TObject extends RoomObject = RoomObject
+    > = TObject & { store: Store<TResource, false>; id: Id<TObject> };
+
+    interface ManagedStorageObject<TResource extends ResourceConstant>
+        extends RoomObject {
+        id: Id<this>;
+        store: Store<TResource, false>;
+        storage: StorageManager<this, TResource>;
+    }
 }

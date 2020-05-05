@@ -1,7 +1,7 @@
 import "lodash";
+import { Priority } from "../const";
 import { CynClusterManager } from "./cluster";
 import { CreepBrain } from "./creep/brain";
-import { TaskPriority } from "./task/delegator";
 
 declare global {
     interface Memory {
@@ -52,7 +52,7 @@ declare global {
             namespace Object {
                 interface Generic<TType extends Type.ANY> {
                     type: TType;
-                    priority: TaskPriority;
+                    priority: Priority;
                     allowMultipleWorkers?: boolean;
                 }
 
@@ -63,11 +63,12 @@ declare global {
                 }
 
                 /** Recharge at a spawn */
-                interface Recharge extends Generic<Type.NEED_RECHARGE> {
+                interface Recharge<TTask extends Object.Any = Object.Any>
+                    extends Generic<Type.NEED_RECHARGE> {
                     /** Spawn to recharge at */
                     at: Id<StructureSpawn>;
                     /** A task that was paused for this recharge to happen, if any */
-                    pausedTask?: Object.Any;
+                    pausedTask?: TTask;
                 }
 
                 /** Work on a construction site */
@@ -211,7 +212,7 @@ declare global {
 
             type RoleTaskOf<TRole extends ROLE_ANY> =
                 | RoleTasks[TRole]
-                | Task.Object.Needs
+                | Task.Object.Recharge<RoleTaskOf<TRole>>
                 | Task.Object.Idle;
 
             type ROLE_HARVESTER = "Harvester";
@@ -231,7 +232,9 @@ declare global {
                 creeps: _.Dictionary<ClusterCreep>;
                 creepsSpawning: _.Dictionary<ClusterSpawningCreep>;
                 sources: _.Dictionary<ClusterSource>;
-                storageReservations: _.Dictionary<ClusterStorageReservation[]>;
+                storageReservations: _.Dictionary<
+                    Storage.PendingAccessReservation[]
+                >;
                 pendingTasks?: Task.Object.Any[];
             }
 
@@ -284,6 +287,32 @@ declare global {
                 /** The amount of resource to transfer to (or take away, if negative) */
                 amount: number;
             }
+        }
+
+        namespace Storage {
+            type PendingAccessReservation<
+                TResource extends ResourceConstant = ResourceConstant
+            > = {
+                by: Id<Creep>;
+                resource: TResource;
+                amount: number;
+            };
+        }
+
+        namespace Event {
+            interface BaseEvent<TType extends string, TPayload> {
+                type: TType;
+                payload: TPayload;
+                cluster?: CynClusterManager;
+            }
+
+            type TypeOf<E> = E extends BaseEvent<infer T, any> ? T : string;
+            type Any = BaseEvent<string, any>;
+
+            type Tick = BaseEvent<"Tick", { tick: number }>;
+            type Init = BaseEvent<"Init", { tick: number }>;
+
+            type All = Tick | Init;
         }
     }
 

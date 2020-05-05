@@ -40,7 +40,7 @@ export class HarvesterBrain extends CreepBrain<"Harvester"> {
                             creep.pos.findInRange(FIND_STRUCTURES, 1, {
                                 filter: (st: Structure) =>
                                     st instanceof StructureContainer &&
-                                    st.isMiningContainer,
+                                    st.storage.isMiningContainer(),
                             })
                         );
                         if (container) {

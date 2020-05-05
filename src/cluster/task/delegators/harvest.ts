@@ -1,4 +1,5 @@
-import { TaskDelegator, TaskPriority } from "../delegator";
+import { Priority } from "../../../const";
+import { TaskDelegator } from "../delegator";
 
 export class SourceHarvestTaskDelegator extends TaskDelegator<
     CynCluster.Task.Object.HarvestSource
@@ -32,7 +33,7 @@ export class SourceHarvestTaskDelegator extends TaskDelegator<
                     if (!miner.miner) {
                         work.push({
                             type: "HarvestSource",
-                            priority: TaskPriority.HIGH,
+                            priority: Priority.HIGH,
                             from: pos,
                             fromStr: pos.toString(),
                             source: source.id,

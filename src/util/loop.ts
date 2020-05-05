@@ -1,5 +1,6 @@
 import _ from "lodash";
 
+// TODO replace this with the event pipeline
 export abstract class GameLoopConsumer {
     #loopConsumers: GameLoopConsumer[] = [];
 

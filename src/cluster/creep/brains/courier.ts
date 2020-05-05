@@ -1,5 +1,5 @@
 import _ from "lodash";
-import { TaskPriority } from "../../task/delegator";
+import { Priority } from "../../../const";
 import { CreepBrain } from "../brain";
 import { CynCreepController } from "../controller";
 
@@ -53,7 +53,7 @@ export class CourierBrain extends CreepBrain<"Courier"> {
         if (creep.store.getUsedCapacity() ?? 0 > 0) {
             return {
                 type: "DropoffStorage",
-                priority: TaskPriority.NORMAL,
+                priority: Priority.NORMAL,
                 resource: _.find(
                     Object.keys(creep.store) as ResourceConstant[],
                     (res) => creep.store[res] > 0

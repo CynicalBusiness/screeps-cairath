@@ -1,4 +1,9 @@
 import _ from "lodash";
+import {
+    CREEP_TICKS_TO_LIVE_GOOD,
+    CREEP_TICKS_TO_LIVE_LOW,
+    Priority,
+} from "../../const";
 import { CynCreepController } from "./controller";
 
 export abstract class CreepBrain<
@@ -92,19 +97,65 @@ export abstract class CreepBrain<
         creep: CynCluster.Creep.ClusterCreep<TRole>
     ): CynCluster.Creep.RoleTaskOf<TRole> {
         // do tasks
-        const { task } = creep;
+        let { task } = creep;
         let newTask: CynCluster.Creep.RoleTaskOf<TRole> | undefined = undefined;
-        if (task.type === "Idle")
-            if (task.at)
-                creep.moveTo(
-                    new RoomPosition(task.at.x, task.at.y, task.at.roomName),
-                    {
-                        range: 1,
-                    }
-                );
-        newTask = this.work(creep);
 
-        // TODO if creep is in need of recharge, etc. then re-assign newTask
+        if (creep.ticksToLive && creep.ticksToLive < CREEP_TICKS_TO_LIVE_LOW) {
+            const spawn = creep.cluster.findIn(
+                creep.room.name,
+                FIND_MY_SPAWNS
+            )[0];
+            if (spawn)
+                task = {
+                    type: "Recharge",
+                    priority: Priority.HIGHEST,
+                    at: spawn.id,
+                    pausedTask: task,
+                };
+        }
+
+        switch (task.type) {
+            case "Idle":
+                if (task.at)
+                    creep.moveTo(
+                        new RoomPosition(
+                            task.at.x,
+                            task.at.y,
+                            task.at.roomName
+                        ),
+                        {
+                            range: 1,
+                        }
+                    );
+                break;
+            case "Recharge":
+                if (
+                    creep.ticksToLive &&
+                    creep.ticksToLive < CREEP_TICKS_TO_LIVE_GOOD
+                ) {
+                    const spawn = Game.getObjectById(task.at);
+                    if (spawn)
+                        switch (spawn.renewCreep(creep)) {
+                            case ERR_NOT_IN_RANGE:
+                                creep.moveTo(spawn);
+                                newTask = task;
+                                break;
+                            case ERR_NOT_ENOUGH_ENERGY:
+                                newTask =
+                                    creep.ticksToLive < CREEP_TICKS_TO_LIVE_LOW
+                                        ? task
+                                        : task.pausedTask;
+                                break;
+                            default:
+                                newTask =
+                                    creep.ticksToLive < CREEP_TICKS_TO_LIVE_GOOD
+                                        ? task
+                                        : task.pausedTask;
+                                break;
+                        }
+                }
+        }
+        if (!newTask) newTask = this.work(creep);
 
         return (
             newTask ??

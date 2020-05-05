@@ -1,5 +1,6 @@
 import _ from "lodash";
-import { TaskDelegator, TaskPriority } from "../delegator";
+import { Priority } from "../../../const";
+import { TaskDelegator } from "../delegator";
 
 export class RoomUpgradeTaskDelegator extends TaskDelegator<
     CynCluster.Task.Object.UpgradeRoomController
@@ -13,8 +14,8 @@ export class RoomUpgradeTaskDelegator extends TaskDelegator<
                 room: room.name,
                 priority:
                     room.controller && room.controller.ticksToDowngrade < 10000
-                        ? TaskPriority.HIGH
-                        : TaskPriority.LOW,
+                        ? Priority.HIGH
+                        : Priority.LOW,
             })
         );
     }

@@ -6,6 +6,27 @@ export enum CreepRoleType {
     UPGRADER = "Upgrader",
 }
 
+export enum CacheType {
+    OBJECT,
+    RUNTIME,
+    MEMORY,
+}
+
+export enum Priority {
+    LOWEST,
+    LOW,
+    NORMAL,
+    HIGH,
+    HIGHEST,
+    URGENT,
+}
+
+export enum StorageType {
+    GENERAL,
+    INPUT,
+    OUTPUT,
+}
+
 export const CreepRoleParts: {
     [K in CreepRoleType]: BodyPartConstant[];
 } = {
@@ -27,3 +48,7 @@ export const RoomTaskWorkerTypes: {
     [RoomTaskType.HARVEST_SOURCE]: [CreepRoleType.HARVESTER],
     [RoomTaskType.UPGRADE_CONTROLLER]: [CreepRoleType.UPGRADER],
 };
+
+export const CREEP_TICKS_TO_LIVE_MAX = 1500;
+export const CREEP_TICKS_TO_LIVE_GOOD = 1400;
+export const CREEP_TICKS_TO_LIVE_LOW = 400;

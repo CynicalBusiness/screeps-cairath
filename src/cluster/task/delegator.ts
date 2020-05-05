@@ -1,14 +1,5 @@
 import { CynClusterManager } from "../cluster";
 
-export enum TaskPriority {
-    LOWEST,
-    LOW,
-    NORMAL,
-    HIGH,
-    HIGHEST,
-    URGENT,
-}
-
 export abstract class TaskDelegator<
     TTaskTypes extends CynCluster.Task.Object.Any = CynCluster.Task.Object.Any
 > {

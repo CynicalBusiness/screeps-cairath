@@ -1,6 +1,6 @@
 import _ from "lodash";
 import { CynClusterManager } from "../cluster/cluster";
-import { TaskPriority } from "../cluster/task/delegator";
+import { Priority } from "../const";
 
 declare global {
     interface AppropriateStorageOptions<
@@ -15,15 +15,15 @@ declare global {
         cluster?: CynClusterManager;
 
         /** Priorities for storages, where higher priorities are added to first and taken from last */
-        storagePriorities: Partial<Record<StructureConstant, number>>;
+        storagePriorities: Partial<Record<StructureConstant, Priority>>;
 
-        /** Priorities for construction, where higher priorities are assigned first. Anything not in this list is assumed at {@link TaskPriority.NORMAL}. */
+        /** Priorities for construction, where higher priorities are assigned first. Anything not in this list is assumed at {@link Priority.NORMAL}. */
         constructionPriorities: Partial<
-            Record<BuildableStructureConstant, number>
+            Record<BuildableStructureConstant, Priority>
         >;
 
-        /** Priorities for repair, where higher priorities are assigned first. Anything not in this list is assumed at {@link TaskPriority.NORMAL}. */
-        repairPriorities: Partial<Record<StructureConstant, number>>;
+        /** Priorities for repair, where higher priorities are assigned first. Anything not in this list is assumed at {@link Priority.NORMAL}. */
+        repairPriorities: Partial<Record<StructureConstant, Priority>>;
 
         /**
          * Finds a parking flag in a given room
@@ -68,23 +68,23 @@ Object.defineProperties(Room.prototype, {
     },
     storagePriorities: {
         value: {
-            [STRUCTURE_SPAWN]: TaskPriority.HIGHEST,
-            [STRUCTURE_TOWER]: TaskPriority.HIGH,
-            [STRUCTURE_EXTENSION]: TaskPriority.HIGH,
-            [STRUCTURE_CONTAINER]: TaskPriority.LOW,
-            [STRUCTURE_STORAGE]: TaskPriority.LOWEST,
+            [STRUCTURE_SPAWN]: Priority.HIGHEST,
+            [STRUCTURE_EXTENSION]: Priority.HIGH,
+            [STRUCTURE_TOWER]: Priority.NORMAL,
+            [STRUCTURE_CONTAINER]: Priority.LOW,
+            [STRUCTURE_STORAGE]: Priority.LOWEST,
         },
     },
     constructionPriorities: {
         value: {
-            [STRUCTURE_WALL]: TaskPriority.HIGHEST,
-            [STRUCTURE_RAMPART]: TaskPriority.HIGHEST,
-            [STRUCTURE_ROAD]: TaskPriority.HIGH,
+            [STRUCTURE_WALL]: Priority.HIGHEST,
+            [STRUCTURE_RAMPART]: Priority.HIGHEST,
+            [STRUCTURE_ROAD]: Priority.HIGH,
         },
     },
     repairPriorities: {
         value: {
-            [STRUCTURE_ROAD]: TaskPriority.LOW,
+            [STRUCTURE_ROAD]: Priority.LOW,
         },
     },
 });
@@ -122,8 +122,10 @@ Room.prototype.findAppropriateStorages = function <
         .filter(
             (s) =>
                 // ignore mining containers
-                s.structureType !== STRUCTURE_CONTAINER ||
-                !((s as any) as StructureContainer).isMiningContainer
+                (s.structureType !== STRUCTURE_CONTAINER ||
+                    !((s as any) as StructureContainer).storage.isMiningContainer()) &&
+                // ignore links
+                s.structureType !== STRUCTURE_LINK
         )
         .filter((s) => {
             if (typeof amount !== "number" || amount <= 0) amount = 1;

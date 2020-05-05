@@ -4,4 +4,6 @@ import "./RoomPosition.prototype";
 import "./Source.prototype";
 import "./Structure.prototype";
 import "./StructureContainer.prototype";
+import "./StructureExtension.prototype";
 import "./StructureSpawn.prototype";
+import "./StructureStorage.prototype";

@@ -1,5 +1,6 @@
 import _ from "lodash";
-import { TaskDelegator, TaskPriority } from "../delegator";
+import { Priority, StorageType } from "../../../const";
+import { TaskDelegator } from "../delegator";
 
 export class CarryTaskDelegator extends TaskDelegator<
     CynCluster.Creep.RoleTasks["Courier"]
@@ -10,7 +11,7 @@ export class CarryTaskDelegator extends TaskDelegator<
                 .map(
                     (res): CynCluster.Task.Object.PickupPosition => ({
                         type: "PickupPosition",
-                        priority: TaskPriority.HIGHEST,
+                        priority: Priority.HIGHEST,
                         from: res.id,
                         resource: res.resourceType,
                     })
@@ -24,7 +25,7 @@ export class CarryTaskDelegator extends TaskDelegator<
                 .map(
                     (tb): CynCluster.Task.Object.PickupRuin => ({
                         type: "PickupRuin",
-                        priority: TaskPriority.HIGHEST,
+                        priority: Priority.HIGHEST,
                         from: tb.id,
                     })
                 )
@@ -33,16 +34,16 @@ export class CarryTaskDelegator extends TaskDelegator<
                 .filter(
                     (s): s is StructureContainer =>
                         s.structureType === STRUCTURE_CONTAINER &&
-                        s.isMiningContainer &&
                         s.store.getUsedCapacity(RESOURCE_ENERGY) > 0
                 )
+                .filter((s) => s.storage.isMiningContainer())
                 .sortBy((container) =>
                     container.store.getUsedCapacity(RESOURCE_ENERGY)
                 )
                 .map(
                     (container): CynCluster.Task.Object.PickupStorage => ({
                         type: "PickupStorage",
-                        priority: TaskPriority.HIGH,
+                        priority: Priority.HIGH,
                         from: container.id,
                         resource: RESOURCE_ENERGY,
                     })

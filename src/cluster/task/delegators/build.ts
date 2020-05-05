@@ -1,5 +1,6 @@
 import _ from "lodash";
-import { TaskDelegator, TaskPriority } from "../delegator";
+import { Priority } from "../../../const";
+import { TaskDelegator } from "../delegator";
 
 export class ConstructionTaskDelegator extends TaskDelegator<
     CynCluster.Creep.RoleTasks["Builder"]
@@ -16,7 +17,7 @@ export class ConstructionTaskDelegator extends TaskDelegator<
                         priority:
                             site.room?.constructionPriorities[
                                 site.structureType
-                            ] ?? TaskPriority.NORMAL,
+                            ] ?? Priority.NORMAL,
                         target: site.id,
                     })
                 )
@@ -34,9 +35,9 @@ export class ConstructionTaskDelegator extends TaskDelegator<
                         type: "Repair",
                         priority:
                             s.hits < 100
-                                ? TaskPriority.HIGHEST
+                                ? Priority.HIGHEST
                                 : s.room.repairPriorities[s.structureType] ??
-                                  TaskPriority.NORMAL,
+                                  Priority.NORMAL,
                         target: s.id,
                         once: true,
                     })

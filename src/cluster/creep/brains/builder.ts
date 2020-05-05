@@ -1,4 +1,4 @@
-import { TaskPriority } from "../../task/delegator";
+import { Priority } from "../../../const";
 import { CreepBrain } from "../brain";
 import { CynCreepController } from "../controller";
 
@@ -57,7 +57,7 @@ export class BuilderBrain extends CreepBrain<"Builder"> {
         if (creep.store.getUsedCapacity(RESOURCE_ENERGY) <= 0)
             return {
                 type: "PickupStorage",
-                priority: TaskPriority.NORMAL,
+                priority: Priority.NORMAL,
                 resource: RESOURCE_ENERGY,
             };
 

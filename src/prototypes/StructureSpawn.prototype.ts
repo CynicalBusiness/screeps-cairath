@@ -1,8 +1,14 @@
 import _ from "lodash";
 import { CreepBrain } from "../cluster/creep/brain";
+import SpawnStorageManager from "../cluster/structure/storageSpawn";
 
 declare global {
     interface StructureSpawn {
+        _storage?: SpawnStorageManager<this>;
+
+        /** Storage manager for this spawn */
+        storage: SpawnStorageManager<this>;
+
         pendingSpawn: boolean;
 
         spawnClusterCreep<TRole extends CynCluster.Creep.ROLE_ANY>(
@@ -12,6 +18,15 @@ declare global {
         ): ScreepsReturnCode;
     }
 }
+
+Object.defineProperties(StructureSpawn.prototype, {
+    storage: {
+        get(this: StructureSpawn) {
+            return (this._storage =
+                this._storage ?? new SpawnStorageManager(this));
+        },
+    },
+});
 
 StructureSpawn.prototype.spawnClusterCreep = function <
     TRole extends CynCluster.Creep.ROLE_ANY

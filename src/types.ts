@@ -27,9 +27,14 @@ declare global {
 
     // Debug types
     namespace Debug {
-        interface Config {
-            showStats: boolean;
-        }
+        type Option = "Stats" | "Sources";
+
+        /** Debug configuration options */
+        type Config = Partial<Record<Option, boolean>>;
+
+        type DebugDisplay = [RoomPosition, string];
+
+        type Producer = () => DebugDisplay[];
     }
 
     namespace Event {

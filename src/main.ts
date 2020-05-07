@@ -1,7 +1,9 @@
 import _ from "lodash";
 import { Debugger } from "./Debugger";
-import GameCore from "./game";
+import GameCore, { ResourceManager, StorageManager } from "./game";
 import { ErrorMapper } from "./utils";
+
+import "./prototype";
 
 Object.defineProperties(global, {
     GameCore: {
@@ -11,7 +13,14 @@ Object.defineProperties(global, {
 
 export const loop: LoopFunction = (() => {
     try {
-        return ErrorMapper.wrapLoop(GameCore.get().with(Debugger).loop());
+        return ErrorMapper.wrapLoop(
+            GameCore.get()
+                .with(Debugger)
+                .with(ResourceManager)
+                .with(StorageManager)
+                .init()
+                .loop()
+        );
     } catch (err) {
         console.log(ErrorMapper.sourceMappedStackTrace(err));
         return _.noop;

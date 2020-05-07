@@ -1,5 +1,6 @@
 export * as CONST from "../const";
 
+import _ from "lodash";
 import { Observable, Subject } from "rxjs";
 import Format from "string-format";
 import { name, version } from "../../package.json";
@@ -66,6 +67,11 @@ export class GameCore {
 
     public next(event: Omit<Event.Type.Any, "tick">): void {
         this.#event$.next({ ...event, tick: Game.time });
+    }
+
+    public init(): this {
+        _.each(this.#objects, (obj) => obj.init());
+        return this;
     }
 
     public loop(): LoopFunction {

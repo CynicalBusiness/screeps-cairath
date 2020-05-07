@@ -8,6 +8,7 @@ import { Debugger } from "../Debugger";
 import { INIT_MESSAGE } from "../const";
 import { ofType } from "../utils";
 import { AbstractGameCoreObject } from "./AbstractGameCoreObject";
+import { ClusterManager } from "./cluster";
 
 /**
  * Main game class
@@ -50,8 +51,29 @@ export class GameCore {
         return this.objects["Debugger"] as Debugger;
     }
 
+    public get ClusterManager(): ClusterManager {
+        return this.objects["ClusterManager"] as ClusterManager;
+    }
+
     public get objects(): Readonly<_.Dictionary<AbstractGameCoreObject>> {
         return { ...this.#objects };
+    }
+
+    /** Logs a message to the console */
+    public log(
+        message: string,
+        formatData?: any,
+        prefix?: string,
+        color?: string
+    ): void {
+        console.log(
+            `<span style="color: ${
+                color ?? "inherit"
+            };vertical-align:top"><span style="font-size: 75%;opacity:0.6">[${prefix}]</span> ${Format(
+                message,
+                formatData
+            )}</span>`
+        );
     }
 
     /**
@@ -70,7 +92,10 @@ export class GameCore {
     }
 
     public init(): this {
-        _.each(this.#objects, (obj) => obj.init());
+        _.each(this.#objects, (obj, name) => {
+            this.log("Init " + name, undefined, "Core");
+            obj.init();
+        });
         return this;
     }
 

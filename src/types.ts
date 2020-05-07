@@ -14,6 +14,8 @@ declare global {
         lastTickTime: number;
         cpu: CPU & { used: number };
         debug?: Partial<Debug.Config>;
+
+        clusters: _.Dictionary<Cluster.Memory>;
     }
 
     // types

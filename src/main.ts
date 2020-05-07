@@ -1,8 +1,7 @@
 import _ from "lodash";
 import { Debugger } from "./Debugger";
-import GameCore, { ResourceManager, StorageManager } from "./game";
+import GameCore, { ClusterManager, StorageManager } from "./game";
 import { ErrorMapper } from "./utils";
-
 import "./prototype";
 
 Object.defineProperties(global, {
@@ -16,8 +15,8 @@ export const loop: LoopFunction = (() => {
         return ErrorMapper.wrapLoop(
             GameCore.get()
                 .with(Debugger)
-                .with(ResourceManager)
                 .with(StorageManager)
+                .with(ClusterManager)
                 .init()
                 .loop()
         );

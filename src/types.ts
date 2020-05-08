@@ -13,8 +13,8 @@ declare global {
         lastReload: number;
         lastTickTime: number;
         cpu: CPU & { used: number };
-        debug?: Partial<Debug.Config>;
 
+        debug?: Debug.Memory;
         clusters: _.Dictionary<Cluster.Memory>;
     }
 
@@ -31,12 +31,22 @@ declare global {
     namespace Debug {
         type Option = "Stats" | "Sources";
 
+        type Memory = {
+            statRooms?: string[];
+            options?: Partial<Options>;
+        };
+
         /** Debug configuration options */
-        type Config = Partial<Record<Option, boolean>>;
+        type Options = Partial<Record<Option, boolean>>;
 
-        type DebugDisplay = [RoomPosition, string];
+        type DebugDisplay = [Room, VisualArguments[]];
 
-        type Producer = () => DebugDisplay[];
+        type VisualArguments =
+            | ["rect", Parameters<RoomVisual["rect"]>]
+            | ["line", Parameters<RoomVisual["line"]>]
+            | ["text", [string, number, number, TextStyle]];
+
+        type Producer = () => DebugDisplay;
     }
 
     namespace Event {

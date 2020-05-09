@@ -31,9 +31,16 @@ declare global {
         ): TType | undefined;
 
         /**
-         * Gets all neighbors to this room position, discounting those that are out-of-bounds to the room
+         * Gets all relative position offsets within a given range. Note that some offsets may be outside the room.
+         * @param range The range to get offsets in; defaults to `1`.
          */
-        getNeighbors(): RoomPosition[];
+        getNeighborOffsets(range?: number): [number, number][];
+
+        /**
+         * Gets all neighbors to this room position within a given range, discounting those that are out-of-bounds
+         * @param range The range to get offsets in; defaults to `1`.
+         */
+        getNeighbors(range?: number): RoomPosition[];
 
         /**
          * Gets all neighbors that are walkable. Returns tiles which are not occupied by a non-walkable structure (if
@@ -100,21 +107,29 @@ RoomPosition.prototype.getNearestInLinearRange = function <
         cache[cacheKey] ?? this.findClosestByRange(find)) as TType | undefined;
 };
 
+RoomPosition.prototype.getNeighborOffsets = function (
+    this: RoomPosition,
+    range = 1
+): [number, number][] {
+    const neighbors: [number, number][] = [];
+    for (let x = -range; x <= range; x++) {
+        for (let y = -range; y <= range; y++) {
+            if (x === 0 && y === 0) continue;
+            neighbors.push([x, y]);
+        }
+    }
+    return neighbors;
+};
+
 RoomPosition.prototype.getNeighbors = function (
-    this: RoomPosition & { _neighbors: RoomPosition[] }
+    this: RoomPosition & { _neighbors: _.NumericDictionary<RoomPosition[]> },
+    range = 1
 ): RoomPosition[] {
-    return (this._neighbors =
-        this._neighbors ??
-        _([
-            [1, 0],
-            [1, 1],
-            [1, -1],
-            [0, 1],
-            [0, -1],
-            [-1, 1],
-            [-1, 0],
-            [-1, -1],
-        ])
+    if (!this.room) return [];
+    this._neighbors = this._neighbors ?? {};
+    return (this._neighbors[range] =
+        this._neighbors[range] ??
+        _(this.getNeighborOffsets(range))
             .map(([x, y]) => this.room?.getPositionAt(x + this.x, y + this.y))
             .compact()
             .value());

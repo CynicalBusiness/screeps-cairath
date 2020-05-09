@@ -19,7 +19,7 @@ export class Debugger extends AbstractGameCoreObject {
         message: string,
         options?: TextStyle,
         lineHeight: number = CONST.STATS_SIZE
-    ): Debug.VisualArguments[] {
+    ): Debug.VisualArgumentsText[] {
         const opts: TextStyle = {
             font: `${CONST.STATS_SIZE} monospace`,
             align: "left",
@@ -28,12 +28,35 @@ export class Debugger extends AbstractGameCoreObject {
         };
         return _(message.trim().split(/\n/g))
             .map(
-                (line, ln): Debug.VisualArguments => [
+                (line, ln): Debug.VisualArgumentsText => [
                     "text",
                     [line, x, y + ln * lineHeight, opts],
                 ]
             )
             .value();
+    }
+
+    /**
+     * Creates a rectangular highlight on a given tile
+     * @param pos The tile position to highlight
+     * @param color The color
+     * @param options Any additional options
+     */
+    public static createTileHighlightVisual(
+        pos: RoomPosition,
+        color: string,
+        options?: PolyStyle
+    ): Debug.VisualArgumentsRect {
+        return [
+            "rect",
+            [
+                pos.x - 0.5,
+                pos.y - 0.5,
+                1,
+                1,
+                { fill: color, opacity: 0.25, ...options },
+            ],
+        ];
     }
 
     #options: Partial<Record<Debug.Option, Debug.Producer[]>> = {};
@@ -138,11 +161,19 @@ export class Debugger extends AbstractGameCoreObject {
                         _.each(visuals, (args) => {
                             switch (args[0]) {
                                 case "text":
-                                    return room.visual.text(...args[1]);
+                                    return room.visual.text(
+                                        ...(args[1] as Parameters<
+                                            RoomVisual["text"]
+                                        >)
+                                    );
                                 case "line":
                                     return room.visual.line(...args[1]);
                                 case "rect":
-                                    return room.visual.rect(...args[1]);
+                                    return room.visual.rect(
+                                        ...(args[1] as Parameters<
+                                            RoomVisual["rect"]
+                                        >)
+                                    );
                             }
                         });
                     });

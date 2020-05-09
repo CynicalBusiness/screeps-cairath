@@ -25,6 +25,7 @@
         }
     },
     "rules": {
+        "no-dupe-class-members": "off",
         "@typescript-eslint/member-ordering": [
             "error",
             {

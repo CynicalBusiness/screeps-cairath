@@ -1,16 +1,22 @@
 import _ from "lodash";
-import { GameCore } from "../GameCore";
+import { ClusterManager } from "./ClusterManager";
+import { SourceController } from "./controller";
 
 /**
  * Main game cluster
  */
 export class Cluster {
+    public readonly manager: ClusterManager;
+
     /** The name of this cluster */
     public readonly name: string;
 
+    public readonly controllers: Readonly<Clusters.Controllers>;
+
     #rooms: Room[];
 
-    public constructor(name: string) {
+    public constructor(manager: ClusterManager, name: string) {
+        this.manager = manager;
         this.name = name;
         const { headquarters, rooms = [] } = this.memory;
 
@@ -34,13 +40,22 @@ export class Cluster {
             name,
             rooms: [headquarters, ...rooms].join(","),
         });
+
+        this.controllers = {
+            rooms: _(this.rooms)
+                .keyBy("name")
+                .mapValues((room) => ({
+                    source: new SourceController(this, room).setup(),
+                }))
+                .value(),
+        };
     }
 
     /**
      * Memory associated with this cluster
      */
-    public get memory(): Cluster.Memory {
-        const mem = GameCore.get().ClusterManager.memory[this.name];
+    public get memory(): Clusters.Memory {
+        const mem = this.manager.memory[this.name];
         if (!mem)
             throw new Error(
                 "Cannot access cluster memory as no such cluster is in memory"
@@ -63,8 +78,22 @@ export class Cluster {
         return [...this.#rooms];
     }
 
+    /**
+     * Gets the controllers for a given room, or the headquarters room if not provided
+     * @param roomName The name of the room
+     */
+    public getRoomControllers(): Clusters.RoomControllers;
+    public getRoomControllers(
+        roomName: string
+    ): Clusters.RoomControllers | undefined;
+    public getRoomControllers(
+        roomName?: string
+    ): Clusters.RoomControllers | undefined {
+        return this.controllers.rooms[roomName ?? this.headquarters.name];
+    }
+
     public log(message: string, formatData?: any): void {
-        GameCore.get().ClusterManager.log(message, formatData, this.name);
+        this.manager.log(message, formatData, this.name);
     }
 
     /**

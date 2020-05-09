@@ -30,6 +30,18 @@ declare global {
             filter?: (obj: FindTypes[TFind]) => obj is TType
         ): TType | undefined;
 
+        /**
+         * Gets all neighbors to this room position, discounting those that are out-of-bounds to the room
+         */
+        getNeighbors(): RoomPosition[];
+
+        /**
+         * Gets all neighbors that are walkable. Returns tiles which are not occupied by a non-walkable structure (if
+         * `considerStructures`) or walls. Roads on walls are considered walkable only if `considerStructures`
+         * @param considerStructures Whether or not to consider structures
+         */
+        getWalkableNeighbors(considerStructures?: boolean): RoomPosition[];
+
         room?: Room;
     }
 }
@@ -86,4 +98,45 @@ RoomPosition.prototype.getNearestInLinearRange = function <
 
     return (cache[cacheKey] =
         cache[cacheKey] ?? this.findClosestByRange(find)) as TType | undefined;
+};
+
+RoomPosition.prototype.getNeighbors = function (
+    this: RoomPosition & { _neighbors: RoomPosition[] }
+): RoomPosition[] {
+    return (this._neighbors =
+        this._neighbors ??
+        _([
+            [1, 0],
+            [1, 1],
+            [1, -1],
+            [0, 1],
+            [0, -1],
+            [-1, 1],
+            [-1, 0],
+            [-1, -1],
+        ])
+            .map(([x, y]) => this.room?.getPositionAt(x + this.x, y + this.y))
+            .compact()
+            .value());
+};
+
+RoomPosition.prototype.getWalkableNeighbors = function (
+    this: RoomPosition & {
+        _walkableNeighbors: { with?: RoomPosition[]; without?: RoomPosition[] };
+    },
+    considerStructures?: boolean
+): RoomPosition[] {
+    this._walkableNeighbors = this._walkableNeighbors ?? {};
+    const wwo = considerStructures ? "with" : "without";
+    return (this._walkableNeighbors[wwo] =
+        this._walkableNeighbors[wwo] ??
+        _.filter(this.getNeighbors(), (neighbor) => {
+            const walkableTerrain =
+                neighbor.lookFor(LOOK_TERRAIN)[0] !== "wall";
+
+            if (considerStructures) {
+                // TODO implement this
+                return walkableTerrain;
+            } else return walkableTerrain;
+        }));
 };

@@ -9,7 +9,7 @@ export class ClusterManager extends AbstractGameCoreObject {
     #cluster: _.Dictionary<Cluster> = {};
 
     /** Cluster memory */
-    public get memory(): _.Dictionary<Cluster.Memory> {
+    public get memory(): _.Dictionary<Clusters.Memory> {
         return (Memory.clusters = Memory.clusters ?? {});
     }
 
@@ -19,8 +19,11 @@ export class ClusterManager extends AbstractGameCoreObject {
             cluster.claim(room);
             return cluster;
         } else {
-            this.memory[clusterName] = { headquarters: room };
-            const cluster = new Cluster(clusterName);
+            this.memory[clusterName] = {
+                headquarters: room,
+                control: { sources: {} },
+            };
+            const cluster = new Cluster(this, clusterName);
             this.#cluster[clusterName] = cluster;
             return cluster;
         }
@@ -37,7 +40,7 @@ export class ClusterManager extends AbstractGameCoreObject {
     public init(): void {
         _.each(
             _.keys(this.memory),
-            (name) => (this.#cluster[name] = new Cluster(name))
+            (name) => (this.#cluster[name] = new Cluster(this, name))
         );
     }
 }

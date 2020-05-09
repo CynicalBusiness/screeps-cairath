@@ -15,7 +15,7 @@ declare global {
         cpu: CPU & { used: number };
 
         debug?: Debug.Memory;
-        clusters: _.Dictionary<Cluster.Memory>;
+        clusters: _.Dictionary<Clusters.Memory>;
     }
 
     // types
@@ -42,9 +42,19 @@ declare global {
         type DebugDisplay = [Room, VisualArguments[]];
 
         type VisualArguments =
-            | ["rect", Parameters<RoomVisual["rect"]>]
-            | ["line", Parameters<RoomVisual["line"]>]
-            | ["text", [string, number, number, TextStyle]];
+            | VisualArgumentsRect
+            | VisualArgumentsLine
+            | VisualArgumentsText;
+
+        type VisualArgumentsLine = ["line", Parameters<RoomVisual["line"]>];
+
+        type VisualArgumentsText =
+            | ["text", [string, number, number, TextStyle]]
+            | ["text", [string, RoomPosition, TextStyle]];
+
+        type VisualArgumentsRect =
+            | ["rect", [number, number, number, number, PolyStyle]]
+            | ["rect", [RoomPosition, number, number, PolyStyle]];
 
         type Producer = () => DebugDisplay;
     }

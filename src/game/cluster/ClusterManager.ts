@@ -6,7 +6,7 @@ import { Cluster } from "./Cluster";
  * Manager singleton for all clusters
  */
 export class ClusterManager extends AbstractGameCoreObject {
-    #cluster: _.Dictionary<Cluster> = {};
+    private _cluster: _.Dictionary<Cluster> = {};
 
     /** Cluster memory */
     public get memory(): _.Dictionary<Clusters.Memory> {
@@ -14,8 +14,8 @@ export class ClusterManager extends AbstractGameCoreObject {
     }
 
     public claim(room: string, clusterName: string = room): Cluster {
-        if (this.#cluster[clusterName]) {
-            const cluster = this.#cluster[clusterName];
+        if (this._cluster[clusterName]) {
+            const cluster = this._cluster[clusterName];
             cluster.claim(room);
             return cluster;
         } else {
@@ -24,7 +24,7 @@ export class ClusterManager extends AbstractGameCoreObject {
                 control: { sources: {} },
             };
             const cluster = new Cluster(this, clusterName);
-            this.#cluster[clusterName] = cluster;
+            this._cluster[clusterName] = cluster;
             return cluster;
         }
     }
@@ -40,7 +40,7 @@ export class ClusterManager extends AbstractGameCoreObject {
     public init(): void {
         _.each(
             _.keys(this.memory),
-            (name) => (this.#cluster[name] = new Cluster(this, name))
+            (name) => (this._cluster[name] = new Cluster(this, name))
         );
     }
 }

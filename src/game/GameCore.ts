@@ -29,8 +29,8 @@ export class GameCore {
     /** Observable fired once per tick */
     public readonly tick$: Observable<Event.Type.Tick>;
 
-    #event$ = new Subject<Event.Type.Any>();
-    #objects: _.Dictionary<AbstractGameCoreObject> = {};
+    private _event$ = new Subject<Event.Type.Any>();
+    private _objects: _.Dictionary<AbstractGameCoreObject> = {};
 
     private constructor() {
         console.log(
@@ -43,7 +43,7 @@ export class GameCore {
         );
         Memory.lastReload = Game.time;
 
-        this.event$ = this.#event$.asObservable();
+        this.event$ = this._event$.asObservable();
         this.tick$ = this.event$.pipe(ofType("Tick"));
     }
 
@@ -56,7 +56,7 @@ export class GameCore {
     }
 
     public get objects(): Readonly<_.Dictionary<AbstractGameCoreObject>> {
-        return { ...this.#objects };
+        return { ...this._objects };
     }
 
     /** Logs a message to the console */
@@ -83,16 +83,16 @@ export class GameCore {
     public with(GCO: GameCoreObject): this {
         const obj = new GCO(this);
         this.tick$.subscribe(obj.loop.bind(obj));
-        this.#objects[GCO.name] = obj;
+        this._objects[GCO.name] = obj;
         return this;
     }
 
     public next(event: Omit<Event.Type.Any, "tick">): void {
-        this.#event$.next({ ...event, tick: Game.time });
+        this._event$.next({ ...event, tick: Game.time });
     }
 
     public init(): this {
-        _.each(this.#objects, (obj, name) => {
+        _.each(this._objects, (obj, name) => {
             this.log("Init " + name, undefined, "Core");
             obj.init();
         });

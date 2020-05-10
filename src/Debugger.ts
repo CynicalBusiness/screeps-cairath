@@ -59,7 +59,7 @@ export class Debugger extends AbstractGameCoreObject {
         ];
     }
 
-    #options: Partial<Record<Debug.Option, Debug.Producer[]>> = {};
+    private _options: Partial<Record<Debug.Option, Debug.Producer[]>> = {};
 
     public get memory(): Debug.Memory {
         return (Memory.debug = Memory.debug ?? {});
@@ -82,7 +82,7 @@ export class Debugger extends AbstractGameCoreObject {
         option: Debug.Option,
         ...producers: Debug.Producer[]
     ): this {
-        (this.#options[option] = this.#options[option] ?? []).push(
+        (this._options[option] = this._options[option] ?? []).push(
             ...producers
         );
         return this;
@@ -153,7 +153,7 @@ export class Debugger extends AbstractGameCoreObject {
     }
 
     public loop(): void {
-        _.each(this.#options, (producers, option) => {
+        _.each(this._options, (producers, option) => {
             if (producers && this.has(option as Debug.Option)) {
                 _(producers)
                     .map((producer) => producer())

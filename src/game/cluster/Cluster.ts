@@ -13,7 +13,7 @@ export class Cluster {
 
     public readonly controllers: Readonly<Clusters.Controllers>;
 
-    #rooms: Room[];
+    private _rooms: Room[];
 
     public constructor(manager: ClusterManager, name: string) {
         this.manager = manager;
@@ -27,7 +27,7 @@ export class Cluster {
                     headquarters
             );
 
-        this.#rooms = _.reduce(
+        this._rooms = _.reduce(
             rooms,
             (rooms, name) => {
                 const room = Game.rooms[name];
@@ -67,7 +67,7 @@ export class Cluster {
      * Headquarters of this cluster
      */
     public get headquarters(): Room {
-        return this.#rooms[0];
+        return this._rooms[0];
     }
 
     /**
@@ -75,7 +75,7 @@ export class Cluster {
      * @see headquarters
      */
     public get rooms(): Room[] {
-        return [...this.#rooms];
+        return [...this._rooms];
     }
 
     /**
@@ -108,7 +108,7 @@ export class Cluster {
                 "Cannot claim room which is already claimed by this cluster"
             );
         (this.memory.rooms = this.memory.rooms ?? []).push(roomName);
-        this.#rooms.push(room);
+        this._rooms.push(room);
         return this;
     }
 }

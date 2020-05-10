@@ -4,10 +4,10 @@ import { Debugger } from "../../../Debugger";
 import { AbstractRoomController } from "./AbstractRoomController";
 
 export class SourceController extends AbstractRoomController {
-    #sources: _.Dictionary<Clusters.Sources.Data> = {};
+    private _sources: _.Dictionary<Clusters.Sources.Data> = {};
 
     public get sources(): [Source, Clusters.Sources.Data][] {
-        return _(this.#sources)
+        return _(this._sources)
             .map((sourceData) => [
                 Game.getObjectById(sourceData.sourceId),
                 sourceData,
@@ -17,7 +17,7 @@ export class SourceController extends AbstractRoomController {
     }
 
     public init(): void {
-        this.#sources = _(this.room.search(FIND_SOURCES))
+        this._sources = _(this.room.search(FIND_SOURCES))
             .keyBy("id")
             .mapValues((source) => ({
                 sourceId: source.id,

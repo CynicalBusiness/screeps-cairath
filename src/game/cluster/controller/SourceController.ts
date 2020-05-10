@@ -6,18 +6,29 @@ import { AbstractRoomController } from "./AbstractRoomController";
 export class SourceController extends AbstractRoomController {
     #sources: _.Dictionary<Clusters.Sources.Data> = {};
 
+    public get sources(): [Source, Clusters.Sources.Data][] {
+        return _(this.#sources)
+            .map((sourceData) => [
+                Game.getObjectById(sourceData.sourceId),
+                sourceData,
+            ])
+            .filter((s): s is [Source, Clusters.Sources.Data] => !!s[0])
+            .value();
+    }
+
     public init(): void {
-        const s = this.room.search(FIND_SOURCES);
-        this.#sources = _(s)
+        this.#sources = _(this.room.search(FIND_SOURCES))
             .keyBy("id")
             .mapValues((source) => ({
-                source,
+                sourceId: source.id,
                 spots: source.pos.getWalkableNeighbors(false), // TODO
             }))
             .value();
+
+        // register debug visuals
         this.game.Debugger.register("Sources", () => [
             this.room,
-            _.flatMap(this.#sources, ({ source, spots }) => [
+            _.flatMap(this.sources, ([source, { spots }]) => [
                 ...Debugger.createTextVisuals(
                     source.pos.x + 0.5,
                     source.pos.y,

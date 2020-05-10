@@ -26,7 +26,7 @@ declare global {
 
         namespace Sources {
             interface Data {
-                source: Source;
+                sourceId: Id<Source>;
                 spots: RoomPosition[];
             }
         }

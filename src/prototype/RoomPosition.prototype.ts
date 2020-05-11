@@ -49,6 +49,13 @@ declare global {
          */
         getWalkableNeighbors(considerStructures?: boolean): RoomPosition[];
 
+        /**
+         * Of the provided room positions, returns the closest to this position by linear range. Returns `undefined`
+         * if the room positions are not in the same room or the array is empty.
+         * @param positions The positions to check
+         */
+        getClosestInRange(positions: RoomPosition[]): RoomPosition | undefined;
+
         room?: Room;
     }
 }
@@ -154,4 +161,14 @@ RoomPosition.prototype.getWalkableNeighbors = function (
                 return walkableTerrain;
             } else return walkableTerrain;
         }));
+};
+
+RoomPosition.prototype.getClosestInRange = function (
+    this: RoomPosition,
+    positions: RoomPosition[]
+): RoomPosition | undefined {
+    return _(positions)
+        .filter((p) => p.roomName === this.roomName)
+        .sortBy((p) => this.getRangeTo(p))
+        .first();
 };
